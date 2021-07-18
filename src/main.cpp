@@ -67,14 +67,18 @@ void setup()
   motorControl.begin(0, &Wire); //specified custom address
 
   //enable pins motor
-  motorControl.pinMode(MOTOR1IN1, OUTPUT);
-  motorControl.pinMode(MOTOR1IN2, OUTPUT);
-  motorControl.pinMode(MOTOR2IN1, OUTPUT);
-  motorControl.pinMode(MOTOR2IN2, OUTPUT);
-  motorControl.pinMode(MOTOR3IN1, OUTPUT);
-  motorControl.pinMode(MOTOR3IN2, OUTPUT);
-  motorControl.pinMode(MOTOR4IN1, OUTPUT);
-  motorControl.pinMode(MOTOR4IN2, OUTPUT);
+  // motorControl.pinMode(MOTOR1IN1, OUTPUT);
+  // motorControl.pinMode(MOTOR1IN2, OUTPUT);
+  // motorControl.pinMode(MOTOR2IN1, OUTPUT);
+  // motorControl.pinMode(MOTOR2IN2, OUTPUT);
+  // motorControl.pinMode(MOTOR3IN1, OUTPUT);
+  // motorControl.pinMode(MOTOR3IN2, OUTPUT);
+  // motorControl.pinMode(MOTOR4IN1, OUTPUT);
+  // motorControl.pinMode(MOTOR4IN2, OUTPUT);
+  FrontRightMotor.begin(&motorControl); //motor 1
+  FrontLeftMotor.begin(&motorControl); //motor 2
+  RearRightMotor.begin(&motorControl); //motor 4
+  RearLeftMotor.begin(&motorControl); //motor 3
 
   pinMode(GIGAVACENABLE, OUTPUT);
 }
@@ -84,7 +88,7 @@ void loop()
   digitalWrite(GIGAVACENABLE, HIGH);
 
   //TEST MOTOR 
-  motorGo(&FrontRightMotor, 255);
+  FrontRightMotor.go(&motorControl, 255);
 }
 
 //functions
@@ -102,5 +106,5 @@ void motorGo(Motor *motorToRun, int PWMvalue) {
     motorControl.digitalWrite(motorToRun->IN2, HIGH);
   }
 
-  motorToRun->go(power);
+  //motorToRun->go(power);
 }

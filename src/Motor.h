@@ -22,8 +22,9 @@ class Motor
 {
     public:
     Motor(int control1, int control2, int pwmPin);
-    void go(int directionAndPower);
-    void stop();
+    void begin(Adafruit_MCP23017 *control);
+    void go(Adafruit_MCP23017 *control, int directionAndPower);
+    void stop(Adafruit_MCP23017 *control);
 
     int IN1;
     int IN2;
