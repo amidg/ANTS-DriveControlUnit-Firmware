@@ -66,6 +66,16 @@ void setup()
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
 
+  //enable pins motor
+  motorControl.pinMode(MOTOR1IN1, OUTPUT);
+  motorControl.pinMode(MOTOR1IN2, OUTPUT);
+  motorControl.pinMode(MOTOR2IN1, OUTPUT);
+  motorControl.pinMode(MOTOR2IN2, OUTPUT);
+  motorControl.pinMode(MOTOR3IN1, OUTPUT);
+  motorControl.pinMode(MOTOR3IN2, OUTPUT);
+  motorControl.pinMode(MOTOR4IN1, OUTPUT);
+  motorControl.pinMode(MOTOR4IN2, OUTPUT);
+
   pinMode(GIGAVACENABLE, OUTPUT);
 }
 
