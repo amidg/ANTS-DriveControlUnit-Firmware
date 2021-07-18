@@ -7,15 +7,17 @@
 #include "analogWrite.h"
 #include "Adafruit_MCP23017.h"
 
-Motor::Motor(Adafruit_MCP23017 *control, int control1, int control2, int pwmPin)
+Motor::Motor(int control1, int control2, int pwmPin)
 {
-  control->pinMode(control1, OUTPUT);
-  control->pinMode(control2, OUTPUT);
-  pinMode(pwmPin, OUTPUT);
-
   IN1 = control1;
   IN2 = control2;
   PWM = pwmPin;
+}
+
+void Motor::begin(Adafruit_MCP23017 *control) {
+  control->pinMode(IN1, OUTPUT);
+  control->pinMode(IN2, OUTPUT);
+  pinMode(PWM, OUTPUT);
 }
 
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
