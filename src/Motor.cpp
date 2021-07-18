@@ -4,6 +4,7 @@
 
 #include "Arduino.h"
 #include "Motor.h"
+#include "analogWrite.h"
 
 Motor::Motor(int control1, int control2, int pwmPin)
 {
@@ -19,7 +20,7 @@ Motor::Motor(int control1, int control2, int pwmPin)
 void Motor::go(int directionAndPower)
 {
   int power = abs(directionAndPower);
-  //analogWrite(PWM, power);
+  analogWrite(PWM, power);
 
   //controls side
   if(directionAndPower >= 0) {
@@ -37,5 +38,5 @@ void Motor::stop()
 {
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW); 
-  //analogWrite(PWM, 0);
+  analogWrite(PWM, 0);
 }
