@@ -52,10 +52,10 @@
 Adafruit_MCP23017 motorControl;
 
 //assumed direction when motherboard ethernet side facing rear of the robot
-Motor FrontLeftMotor = Motor(&motorControl, MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
-Motor FrontRightMotor = Motor(&motorControl, MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
-Motor RearLeftMotor = Motor(&motorControl, MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
-Motor RearRightMotor = Motor(&motorControl, MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
+Motor FrontLeftMotor;
+Motor FrontRightMotor;
+Motor RearLeftMotor;
+Motor RearRightMotor;
 
 void setup()
 {
@@ -63,6 +63,11 @@ void setup()
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
   pinMode(GIGAVACENABLE, OUTPUT);
+
+  FrontLeftMotor = Motor(&motorControl, MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
+  FrontRightMotor = Motor(&motorControl, MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
+  RearLeftMotor = Motor(&motorControl, MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
+  RearRightMotor = Motor(&motorControl, MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 }
 
 void loop()
