@@ -80,5 +80,5 @@ void loop()
   //FrontRightMotor.go(&motorControl, 255);
   motorControl.digitalWrite(MOTOR1IN1, HIGH);
   motorControl.digitalWrite(MOTOR1IN2, LOW);
-  analogWrite(MOTOR1PWM, 127);
+  analogWrite(MOTOR1PWM, 0;
 }
