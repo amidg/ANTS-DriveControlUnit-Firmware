@@ -2,9 +2,11 @@
 #include <Wire.h>
 #include <SPI.h>
 #include "Adafruit_MCP23017.h" //please run pio lib install "adafruit/Adafruit BusIO@^1.8.2" before proceeding
+#include "analogWrite.h"
 
 //pin definitions:
 #define GIGAVACENABLE 14
+#define MOTOR1PWM 26
 
 /*
   MCP23017 L298P PIN DEFINITIONS:
@@ -38,12 +40,23 @@ void setup()
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
   pinMode(GIGAVACENABLE, OUTPUT);
+  pinMode(MOTOR1PWM, OUTPUT);
+  motorControl.pinMode(0, OUTPUT); //motor1, input 1/4
+  motorControl.pinMode(1, OUTPUT); //motor1, input 2/3 
+  motorControl.pinMode(2, OUTPUT); //motor2, input 1/4
+  motorControl.pinMode(3, OUTPUT); //motor2, input 2/3
+  motorControl.pinMode(4, OUTPUT); //motor3, input 1/4
+  motorControl.pinMode(5, OUTPUT); //motor3, input 2/3
+  motorControl.pinMode(6, OUTPUT); //motor4, input 1/4
+  motorControl.pinMode(7, OUTPUT); //motor4, input 2/3
 }
 
 void loop()
 {
   digitalWrite(GIGAVACENABLE, HIGH);
-  delay(3000);
-  digitalWrite(GIGAVACENABLE, LOW);
-  delay(3000);
+
+  //TEST MOTOR 1
+  motorControl.digitalWrite(0, HIGH);
+  motorControl.digitalWrite(1, LOW);
+  analogWrite(MOTOR1PWM, 255);
 }
