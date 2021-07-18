@@ -40,7 +40,7 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
 
   for (int i = 0; i < power; i++) { //soft start to avoid BJT back current
     analogWrite(PWM, i);
-    delay(10);
+    delay(100); //find proper value
   }
 }
 
