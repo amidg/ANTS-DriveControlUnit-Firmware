@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include <Wire.h>
 #include <SPI.h>
-#include "Adafruit_MCP23017.h" //please run pio lib install "adafruit/Adafruit BusIO@^1.8.2" before proceeding
+#include "Adafruit_MCP23017.h"
 #include "analogWrite.h"
 #include "Motor.h"
 
@@ -57,9 +57,6 @@ Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
-//supporting functions
-void motorGo(Motor *motorToRun, int PWMvalue);
-
 void setup()
 {
   Serial.begin (9600);  
@@ -67,14 +64,6 @@ void setup()
   motorControl.begin(0, &Wire); //specified custom address
 
   //enable pins motor
-  // motorControl.pinMode(MOTOR1IN1, OUTPUT);
-  // motorControl.pinMode(MOTOR1IN2, OUTPUT);
-  // motorControl.pinMode(MOTOR2IN1, OUTPUT);
-  // motorControl.pinMode(MOTOR2IN2, OUTPUT);
-  // motorControl.pinMode(MOTOR3IN1, OUTPUT);
-  // motorControl.pinMode(MOTOR3IN2, OUTPUT);
-  // motorControl.pinMode(MOTOR4IN1, OUTPUT);
-  // motorControl.pinMode(MOTOR4IN2, OUTPUT);
   FrontRightMotor.begin(&motorControl); //motor 1
   FrontLeftMotor.begin(&motorControl); //motor 2
   RearRightMotor.begin(&motorControl); //motor 4
@@ -89,22 +78,4 @@ void loop()
 
   //TEST MOTOR 
   FrontRightMotor.go(&motorControl, 255);
-}
-
-//functions
-void motorGo(Motor *motorToRun, int PWMvalue) {
-  
-  int power = abs(PWMvalue);
-  //controls side
-  if(PWMvalue >= 0) {
-    //if positive, go forward
-    motorControl.digitalWrite(motorToRun->IN1, HIGH);
-    motorControl.digitalWrite(motorToRun->IN2, LOW);
-  } else if (PWMvalue < 0) {
-    //if negative, go backwards
-    motorControl.digitalWrite(motorToRun->IN1, LOW);
-    motorControl.digitalWrite(motorToRun->IN2, HIGH);
-  }
-
-  //motorToRun->go(power);
 }
