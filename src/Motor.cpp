@@ -27,20 +27,21 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
   currentPWM = power;
   //analogWrite(PWM, power);
 
-  //controls side
-  if(directionAndPower >= 0) {
-    //if positive, go forward
-    control->digitalWrite(IN1, HIGH);
-    control->digitalWrite(IN2, LOW);
-  } else if (directionAndPower < 0) {
-    //if negative, go backwards
-    control->digitalWrite(IN1, LOW);
-    control->digitalWrite(IN2, HIGH);
-  }
-
   for (int i = 0; i < power; i++) { //soft start to avoid BJT back current
+    //apply PWM first
     analogWrite(PWM, i);
     delay(100); //find proper value
+
+    //controls side
+    if(directionAndPower >= 0) {
+      //if positive, go forward
+      control->digitalWrite(IN1, HIGH);
+      control->digitalWrite(IN2, LOW);
+    } else if (directionAndPower < 0) {
+      //if negative, go backwards
+      control->digitalWrite(IN1, LOW);
+      control->digitalWrite(IN2, HIGH);
+    }
   }
 }
 
