@@ -16,18 +16,19 @@ IN1/3---IN2/4----PWM--------OUTPUT1/2
 #define Motor_h
 
 #include "Arduino.h"
+#include "Adafruit_MCP23017.h"
 
 class Motor
 {
     public:
-    Motor(int control1, int control2, int pwmPin);
-    void go(int directionAndPower);
-    void stop();
+    Motor(Adafruit_MCP23017 *control, int control1, int control2, int pwmPin);
+    void go(Adafruit_MCP23017 *control, int directionAndPower);
+    void stop(Adafruit_MCP23017 *control);
 
-    private:
     int IN1;
     int IN2;
     int PWM;
+    int currentPWM;
 };
 
 #endif
