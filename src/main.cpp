@@ -84,9 +84,7 @@ void loop()
   digitalWrite(GIGAVACENABLE, HIGH);
 
   //TEST MOTOR 
-  motorControl.digitalWrite(MOTOR2IN1, HIGH);
-  motorControl.digitalWrite(MOTOR2IN2, LOW);
-  analogWrite(MOTOR2PWM, 255);
+  motorGo(&FrontRightMotor, 255);
 }
 
 //functions
