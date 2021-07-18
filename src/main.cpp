@@ -57,15 +57,14 @@ Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
+//supporting functions
+void motorGo(Motor *motorToRun, int PWMvalue);
+
 void setup()
 {
   Serial.begin (9600);  
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
-  FrontLeftMotor.begin(&motorControl);
-  FrontRightMotor.begin(&motorControl);
-  RearLeftMotor.begin(&motorControl);
-  RearRightMotor.begin(&motorControl);
 
   pinMode(GIGAVACENABLE, OUTPUT);
 }
@@ -75,5 +74,23 @@ void loop()
   digitalWrite(GIGAVACENABLE, HIGH);
 
   //TEST MOTOR 
-  FrontLeftMotor.go(&motorControl, 255);
+  motorGo(&FrontLeftMotor, 255);
+}
+
+//functions
+void motorGo(Motor *motorToRun, int PWMvalue) {
+  
+  int power = abs(PWMvalue);
+  //controls side
+  if(PWMvalue >= 0) {
+    //if positive, go forward
+    motorControl.digitalWrite(motorToRun->IN1, HIGH);
+    motorControl.digitalWrite(motorToRun->IN2, LOW);
+  } else if (PWMvalue < 0) {
+    //if negative, go backwards
+    motorControl.digitalWrite(motorToRun->IN1, LOW);
+    motorControl.digitalWrite(motorToRun->IN2, HIGH);
+  }
+
+  motorToRun->go(power);
 }

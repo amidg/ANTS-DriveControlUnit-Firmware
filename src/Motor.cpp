@@ -12,30 +12,26 @@ Motor::Motor(int control1, int control2, int pwmPin)
   IN1 = control1;
   IN2 = control2;
   PWM = pwmPin;
-}
 
-void Motor::begin(Adafruit_MCP23017 *control) {
-  control->pinMode(IN1, OUTPUT);
-  control->pinMode(IN2, OUTPUT);
   pinMode(PWM, OUTPUT);
 }
 
-void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
+void Motor::go(int directionAndPower)
 {
   int power = abs(directionAndPower);
   currentPWM = power;
   analogWrite(PWM, power);
 
-  //controls side
-  if(directionAndPower >= 0) {
-    //if positive, go forward
-    control->digitalWrite(IN1, HIGH);
-    control->digitalWrite(IN2, LOW);
-  } else if (directionAndPower < 0) {
-    //if negative, go backwards
-    control->digitalWrite(IN1, LOW);
-    control->digitalWrite(IN2, HIGH);
-  }
+  // //controls side
+  // if(directionAndPower >= 0) {
+  //   //if positive, go forward
+  //   control->digitalWrite(IN1, HIGH);
+  //   control->digitalWrite(IN2, LOW);
+  // } else if (directionAndPower < 0) {
+  //   //if negative, go backwards
+  //   control->digitalWrite(IN1, LOW);
+  //   control->digitalWrite(IN2, HIGH);
+  // }
 
   // for (int i = 0; i < power; i++) { //soft start to avoid BJT back current
   //   analogWrite(PWM, i);
@@ -43,10 +39,10 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
   // }
 }
 
-void Motor::stop(Adafruit_MCP23017 *control)
+void Motor::stop(/*Adafruit_MCP23017 *control*/)
 {
-  control->digitalWrite(IN1, LOW);
-  control->digitalWrite(IN2, LOW); 
+  // control->digitalWrite(IN1, LOW);
+  // control->digitalWrite(IN2, LOW); 
 
   for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
     analogWrite(PWM, i);
