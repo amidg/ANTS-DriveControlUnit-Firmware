@@ -25,12 +25,9 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
 {
   int power = abs(directionAndPower);
   currentPWM = power;
-  //analogWrite(PWM, power);
 
-  for (int i = 0; i < power; i++) { //soft start to avoid BJT back current
-    //apply PWM first
+  for (int i = 0; i < abs(directionAndPower); i++) {
     analogWrite(PWM, i);
-    delay(100); //find proper value
 
     //controls side
     if(directionAndPower >= 0) {
@@ -42,6 +39,8 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
       control->digitalWrite(IN1, LOW);
       control->digitalWrite(IN2, HIGH);
     }
+
+    delay(50);
   }
 }
 
