@@ -26,7 +26,7 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
   int power = abs(directionAndPower);
   currentPWM = power;
 
-  for (int i = 0; i < abs(directionAndPower); i++) {
+  for (int i = 0; i < abs(directionAndPower)/2; i++) {
     analogWrite(PWM, i);
 
     //controls side
