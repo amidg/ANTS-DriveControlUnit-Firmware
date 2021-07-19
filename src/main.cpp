@@ -82,7 +82,7 @@ int n1 = LOW;
 int encoder1Alast = LOW;
 void encoderHandler(); //interrupt function that
 void calculateEncoders();
-bool isInterruptEnabledonEncoder = FALSE;
+bool isInterruptEnabledonEncoder = 0;
 
 /* Array of all rotary encoders and their pins */
 RotaryEncOverMCP FrontRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 1); //motor 1 encoder
@@ -153,7 +153,7 @@ void RotaryEncoderChanged(bool clockwise, int id) {
 
 void encoderHandler() {
   detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
-  isInterruptEnabledonEncoder = TRUE;
+  isInterruptEnabledonEncoder = 1;
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
@@ -166,6 +166,6 @@ void calculateEncoders() {
         encoderValue[1] = encoderValue[1] + 1;
     }
     Serial.println(encoderValue[1]);
-    isInterruptEnabledonEncoder = FALSE;
+    isInterruptEnabledonEncoder = 0;
   }
 }
