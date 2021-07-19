@@ -74,10 +74,13 @@ Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
 //ENCODER CONTROL
-#define ENCODERINTERRUPT 13
+#define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 Adafruit_MCP23017 encoderControl;
 void RotaryEncoderChanged(bool clockwise, int id); //callback function
-uint32_t encoder1value;
+uint32_t encoderValue[4]; //all motor encoders
+uint16_t encoder1value;
+void encoderHandler(); //interrupt function that
+void calculateEncoders();
 
 /* Array of all rotary encoders and their pins */
 RotaryEncOverMCP FrontRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 1); //motor 1 encoder
@@ -96,6 +99,7 @@ void setup()
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
   encoderControl.begin(2, &Wire); //specified custom address for encoders
+  encoderControl.(); //read this to clear interrupt
 
   //enable pins motor
   FrontRightMotor.begin(&motorControl); //motor 1
@@ -103,7 +107,14 @@ void setup()
   RearRightMotor.begin(&motorControl); //motor 4
   RearLeftMotor.begin(&motorControl); //motor 3
 
-  pinMode(GIGAVACENABLE, OUTPUT);
+  pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
+  pinMode(ENCODERINTERRUPT, INPUT); //encoder interrupt pin
+
+  //Setup interrupts, OR INTA, INTB together on both ports.
+  //thus we will receive an interrupt if something happened on
+  //port A or B with only a single INT connection.
+  encoderControl.setupInterrupts(true,false,LOW);
+  attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING); //configure interrupt
 
   //initialize encoders
   FrontRightEncoder.init();
@@ -136,6 +147,15 @@ void loop()
 
 //encoder callback function
 void RotaryEncoderChanged(bool clockwise, int id) {
-    //Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
-    Serial.println(encoder1value);
+    Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
+}
+
+void encoderHandler() {
+  detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
+  calculateEncoders();
+  attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
+}
+
+void calculateEncoders() {
+
 }
