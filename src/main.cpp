@@ -116,6 +116,8 @@ void loop()
   for (int i = 0; i < 255; i = i + 5) { //go forward
     FrontRightMotor.go(&motorControl, i);
     delay(100);
+    encoder1value = encoderControl.readGPIOAB();
+    FrontRightEncoder.feedInput(encoder1value);
   } 
 
   // FrontRightMotor.stop(&motorControl); //go full stop
@@ -133,6 +135,6 @@ void loop()
 
 //encoder callback function
 void RotaryEncoderChanged(bool clockwise, int id) {
-    Serial.println("Encoder " + String(id) + ": "
-            + (clockwise ? String("clockwise") : String("counter-clock-wise")));
+    //Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
+    Serial.println(encoder1value);
 }
