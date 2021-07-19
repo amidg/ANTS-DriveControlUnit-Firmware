@@ -134,7 +134,7 @@ void loop()
 
   //TEST MOTOR
   //for (int i = 0; i < 255; i = i + 5) { //go forward
-    FrontRightMotor.go(&motorControl, i);
+    FrontRightMotor.go(&motorControl, 255);
     //delay(100);
     calculateEncoders();
   //} 
@@ -164,6 +164,7 @@ void encoderHandler() {
 }
 
 void calculateEncoders() {
+  Serial.println("function executed");
   if (isInterruptEnabledonEncoder) {
     if ( (encoder1Alast == LOW ) && (encoderControl.digitalRead(0) == HIGH) ) {
       if (encoderControl.digitalRead(1) == LOW)
