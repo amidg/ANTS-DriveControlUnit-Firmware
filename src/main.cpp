@@ -89,4 +89,7 @@ void loop()
     FrontRightMotor.go(&motorControl, i);
     delay(100);
   }
+
+  FrontRightMotor.stop(&motorControl);
+  delay(10000);
 }
