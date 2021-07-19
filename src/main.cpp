@@ -76,7 +76,7 @@ Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 //ENCODER CONTROL
 #define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 Adafruit_MCP23017 encoderControl;
-void RotaryEncoderChanged(bool clockwise, int id); //callback function
+//void RotaryEncoderChanged(bool clockwise, int id); //callback function
 int encoderValue[4]; //all motor encoders
 int encoder1Alast = LOW;
 void encoderHandler(); //interrupt function that
@@ -84,14 +84,14 @@ void calculateEncoders();
 bool isInterruptEnabledonEncoder = 0;
 
 /* Array of all rotary encoders and their pins */
-RotaryEncOverMCP FrontRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 1); //motor 1 encoder
-RotaryEncOverMCP FrontLeftEncoder = RotaryEncOverMCP(&encoderControl, 2, 3, &RotaryEncoderChanged, 2); //motor 2 encoder
-RotaryEncOverMCP RearLeftEncoder = RotaryEncOverMCP(&encoderControl, 4, 5, &RotaryEncoderChanged, 3); //motor 3 encoder
-RotaryEncOverMCP RearRightEncoder = RotaryEncOverMCP(&encoderControl, 6, 7, &RotaryEncoderChanged, 4); //motor 4 encoder
+// RotaryEncOverMCP FrontRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 1); //motor 1 encoder
+// RotaryEncOverMCP FrontLeftEncoder = RotaryEncOverMCP(&encoderControl, 2, 3, &RotaryEncoderChanged, 2); //motor 2 encoder
+// RotaryEncOverMCP RearLeftEncoder = RotaryEncOverMCP(&encoderControl, 4, 5, &RotaryEncoderChanged, 3); //motor 3 encoder
+// RotaryEncOverMCP RearRightEncoder = RotaryEncOverMCP(&encoderControl, 6, 7, &RotaryEncoderChanged, 4); //motor 4 encoder
 
-RotaryEncOverMCP encoders[] = {
-  FrontRightEncoder, FrontLeftEncoder, RearLeftEncoder, RearRightEncoder
-}; 
+// RotaryEncOverMCP encoders[] = {
+//   FrontRightEncoder, FrontLeftEncoder, RearLeftEncoder, RearRightEncoder
+// }; 
 
 //MAIN FUNCTION
 void setup()
@@ -153,9 +153,9 @@ void loop()
 
 
 //encoder callback function
-void RotaryEncoderChanged(bool clockwise, int id) {
-    Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
-}
+// void RotaryEncoderChanged(bool clockwise, int id) {
+//     Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
+// }
 
 void encoderHandler() {
   //detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
