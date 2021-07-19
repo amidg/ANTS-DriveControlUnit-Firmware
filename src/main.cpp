@@ -76,9 +76,9 @@ void loop()
 {
   digitalWrite(GIGAVACENABLE, HIGH);
 
-  //TEST MOTOR 
-  FrontRightMotor.go(&motorControl, 255);
-  // motorControl.digitalWrite(MOTOR1IN1, HIGH);
-  // motorControl.digitalWrite(MOTOR1IN2, LOW);
-  // analogWrite(MOTOR1PWM, 127);
+  //TEST MOTOR
+  for (int i = 0; i < 255; i = i + 5) {
+    FrontRightMotor.go(&motorControl, i);
+    delay(500);
+  } 
 }

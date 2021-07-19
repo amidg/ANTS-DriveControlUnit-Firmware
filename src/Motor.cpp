@@ -24,24 +24,32 @@ void Motor::begin(Adafruit_MCP23017 *control) {
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
 {
   int power = abs(directionAndPower);
+  
+  //controls side
+  if(directionAndPower >= 0) {
+    //if positive, go forward
+    control->digitalWrite(IN1, HIGH);
+    control->digitalWrite(IN2, LOW);
+  } else if (directionAndPower < 0) {
+    //if negative, go backwards
+    control->digitalWrite(IN1, LOW);
+    control->digitalWrite(IN2, HIGH);
+  }
 
-  //if (power != currentPWM) { //do softstart 
+  if (currentPWM <= power) {
     for (int i = currentPWM; i < power; i++) {
       analogWrite(PWM, i);
-
-      //controls side
-      if(directionAndPower >= 0) {
-        //if positive, go forward
-        control->digitalWrite(IN1, HIGH);
-        control->digitalWrite(IN2, LOW);
-      } else if (directionAndPower < 0) {
-        //if negative, go backwards
-        control->digitalWrite(IN1, LOW);
-        control->digitalWrite(IN2, HIGH);
-      }
       delay(50);
     }
-    currentPWM = power; //set current PWM, needed for prevent soft start cycling
+    
+  } else if (currentPWM > power) {
+    for (int i = currentPWM; i > power; i--) {
+      analogWrite(PWM, i);
+      delay(50);
+    }
+  }
+
+  currentPWM = power; //set current PWM, needed for prevent soft start cycling
 }
 
 void Motor::stop(Adafruit_MCP23017 *control)
