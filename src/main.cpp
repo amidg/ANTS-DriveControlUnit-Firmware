@@ -128,8 +128,6 @@ void loop()
   for (int i = 0; i < 255; i = i + 5) { //go forward
     FrontRightMotor.go(&motorControl, i);
     delay(100);
-    encoder1value = encoderControl.readGPIOAB();
-    FrontRightEncoder.feedInput(encoder1value);
   } 
 
   // FrontRightMotor.stop(&motorControl); //go full stop
@@ -156,6 +154,8 @@ void encoderHandler() {
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
-void calculateEncoders() {
-
+void calculateEcoders() {
+  encoder1value = encoderControl.readGPIOAB();
+  FrontRightEncoder.feedInput(encoder1value);
+  Serial.println(encoder1value);
 }
