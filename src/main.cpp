@@ -77,8 +77,9 @@ Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 #define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 Adafruit_MCP23017 encoderControl;
 void RotaryEncoderChanged(bool clockwise, int id); //callback function
-uint32_t encoderValue[4]; //all motor encoders
-uint16_t encoder1value;
+int encoderValue[4]; //all motor encoders
+int n1 = LOW;
+int encoder1Alast = LOW;
 void encoderHandler(); //interrupt function that
 void calculateEncoders();
 
@@ -154,8 +155,12 @@ void encoderHandler() {
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
-void calculateEcoders() {
-  encoder1value = encoderControl.readGPIOAB();
-  FrontRightEncoder.feedInput(encoder1value);
-  Serial.println(encoder1value);
+void calculateEncoders() {
+  if ( (encoder1Alast == LOW ) && (encoderControl.digitalRead(0) == HIGH) ) {
+    if (encoderControl.digitalRead(1) == LOW)
+      encoderValue[1] = encoderValue[1] - 1;
+    else 
+      encoderValue[1] = encoderValue[1] + 1;
+  }
+  Serial.println(encoderValue[1]);
 }
