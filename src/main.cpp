@@ -79,6 +79,9 @@ void loop()
   //TEST MOTOR
   for (int i = 0; i < 255; i = i + 5) {
     FrontRightMotor.go(&motorControl, i);
-    delay(500);
+    delay(100);
   } 
+
+  FrontRightMotor.stop(&motorControl);
+  delay(10000);
 }
