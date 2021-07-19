@@ -74,6 +74,7 @@ Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
 //ENCODER CONTROL
+#define ENCODERINTERRUPT 13
 Adafruit_MCP23017 encoderControl;
 void RotaryEncoderChanged(bool clockwise, int id); //callback function
 uint32_t encoder1value;
