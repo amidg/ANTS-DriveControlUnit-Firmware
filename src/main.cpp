@@ -4,6 +4,8 @@
 #include "Adafruit_MCP23017.h"
 #include "analogWrite.h"
 #include "Motor.h"
+#include <Rotary.h>
+#include <RotaryEncOverMCP.h>
 
 //pin definitions:
 #define GIGAVACENABLE 14
@@ -47,21 +49,52 @@
   addr 5 = A2 high , A1 low , A0 high  101
   addr 6 = A2 high , A1 high , A0 low  110
   addr 7 = A2 high, A1 high, A0 high 111
+
+  MCP23017 ENCODER PIN DEFINITIONS:
+  GPA0 -> ENC1-A ---> USE PIN ID 0 --> MOTOR 1 (FRONT RIGHT)
+  GPA1 -> ENC1-B ---> USE PIN ID 1
+
+  GPA2 -> ENC2-A ---> USE PIN ID 2 --> MOTOR 2 (FRONT LEFT)
+  GPA3 -> ENC2-B ---> USE PIN ID 3
+
+  GPA4 -> ENC3-A ---> USE PIN ID 4 --> MOTOR 3 (REAR LEFT)
+  GPA5 -> ENC3-B ---> USE PIN ID 5
+
+  GPA6 -> ENC4-A ---> USE PIN ID 6 --> MOTOR 4 (REAR RIGHT)
+  GPA7 -> ENC4-B ---> USE PIN ID 7
 */
 
+//MOTOR CONTROL
 Adafruit_MCP23017 motorControl;
 
 //assumed direction when motherboard ethernet side facing rear of the robot
-Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
+Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
+//ENCODER CONTROL
+Adafruit_MCP23017 encoderControl;
+void RotaryEncoderChanged(bool clockwise, int id); //callback function
+uint32_t encoder1value;
+
+/* Array of all rotary encoders and their pins */
+RotaryEncOverMCP FrontRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 1); //motor 1 encoder
+RotaryEncOverMCP FrontLeftEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 2); //motor 2 encoder
+RotaryEncOverMCP RearLeftEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 3); //motor 3 encoder
+RotaryEncOverMCP RearRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 4); //motor 4 encoder
+
+RotaryEncOverMCP encoders[] = {
+  FrontRightEncoder, FrontLeftEncoder, RearLeftEncoder, RearRightEncoder
+}; 
+
+//MAIN FUNCTION
 void setup()
 {
   Serial.begin (9600);  
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
+  encoderControl.begin(2, &Wire); //specified custom address for encoders
 
   //enable pins motor
   FrontRightMotor.begin(&motorControl); //motor 1
@@ -70,6 +103,9 @@ void setup()
   RearLeftMotor.begin(&motorControl); //motor 3
 
   pinMode(GIGAVACENABLE, OUTPUT);
+
+  //initialize encoders
+  FrontRightEncoder.init();
 }
 
 void loop()
@@ -82,14 +118,21 @@ void loop()
     delay(100);
   } 
 
-  FrontRightMotor.stop(&motorControl); //go full stop
-  delay(10000);
+  // FrontRightMotor.stop(&motorControl); //go full stop
+  // delay(10000);
 
-  for (int i = 0; i > -255; i--) { //go reverse
-    FrontRightMotor.go(&motorControl, i);
-    delay(100);
-  }
+  // for (int i = 0; i > -255; i--) { //go reverse
+  //   FrontRightMotor.go(&motorControl, i);
+  //   delay(100);
+  // }
 
-  FrontRightMotor.stop(&motorControl);
-  delay(10000);
+  // FrontRightMotor.stop(&motorControl);
+  // delay(10000);
+}
+
+
+//encoder callback function
+void RotaryEncoderChanged(bool clockwise, int id) {
+    Serial.println("Encoder " + String(id) + ": "
+            + (clockwise ? String("clockwise") : String("counter-clock-wise")));
 }
