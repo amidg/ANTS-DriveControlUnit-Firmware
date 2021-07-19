@@ -77,11 +77,16 @@ void loop()
   digitalWrite(GIGAVACENABLE, HIGH);
 
   //TEST MOTOR
-  for (int i = 0; i < 255; i = i + 5) {
+  for (int i = 0; i < 255; i = i + 5) { //go forward
     FrontRightMotor.go(&motorControl, i);
     delay(100);
   } 
 
-  FrontRightMotor.stop(&motorControl);
+  FrontRightMotor.stop(&motorControl); //go full stop
   delay(10000);
+
+  for (int i = 0; i > -255; i--) { //go reverse
+    FrontRightMotor.go(&motorControl, i);
+    delay(100);
+  }
 }
