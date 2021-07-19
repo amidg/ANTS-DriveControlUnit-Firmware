@@ -99,7 +99,7 @@ void setup()
   Wire.begin();
   motorControl.begin(0, &Wire); //specified custom address
   encoderControl.begin(2, &Wire); //specified custom address for encoders
-  encoderControl.(); //read this to clear interrupt
+  //encoderControl.(); //read this to clear interrupt
 
   //enable pins motor
   FrontRightMotor.begin(&motorControl); //motor 1
