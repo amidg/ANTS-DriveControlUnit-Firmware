@@ -133,11 +133,11 @@ void loop()
   digitalWrite(GIGAVACENABLE, HIGH);
 
   //TEST MOTOR
-  for (int i = 0; i < 255; i = i + 5) { //go forward
+  //for (int i = 0; i < 255; i = i + 5) { //go forward
     FrontRightMotor.go(&motorControl, i);
-    delay(100);
+    //delay(100);
     calculateEncoders();
-  } 
+  //} 
 
   // FrontRightMotor.stop(&motorControl); //go full stop
   // delay(10000);
