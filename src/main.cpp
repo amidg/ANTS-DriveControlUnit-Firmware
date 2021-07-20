@@ -119,8 +119,10 @@ void setup()
   //port A or B with only a single INT connection.
   encoderControl.setupInterrupts(true,false,LOW);
   encoderControl.pinMode(0, INPUT);
+  encoderControl.pullUp(0, 0);
   encoderControl.setupInterruptPin(0, CHANGE);
   encoderControl.pinMode(1, INPUT);
+  encoderControl.pullUp(1, 0);
   encoderControl.setupInterruptPin(1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING); //configure interrupt
 

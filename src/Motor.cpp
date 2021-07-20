@@ -18,7 +18,9 @@ Motor::Motor(int control1, int control2, int pwmPin)
 
 void Motor::begin(Adafruit_MCP23017 *control) {
   control->pinMode(IN1, OUTPUT);
+  control->pullUp(IN1, 0);
   control->pinMode(IN2, OUTPUT);
+  control->pullUp(IN2, 0);
 } 
 
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
