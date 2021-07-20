@@ -166,8 +166,8 @@ void encoderHandler() {
 }
 
 void calculateEncoders() {
-  Serial.println("function executed");
   if (isInterruptEnabledonEncoder) {
+    Serial.println("function executed");
     if ( (encoder1Alast == LOW ) && (encoderControl.digitalRead(0) == HIGH) ) {
       if (encoderControl.digitalRead(1) == LOW)
         encoderValue[1] = encoderValue[1] - 1;
