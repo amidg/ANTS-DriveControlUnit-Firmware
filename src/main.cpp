@@ -160,14 +160,14 @@ void loop()
 // }
 
 void IRAM_ATTR encoderHandler() {
-  //detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
+  detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
   digitalWrite(GIGAVACENABLE, LOW);
   isInterruptEnabledonEncoder = 1;
-  //attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
+  attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
 void calculateEncoders() {
-  if (isInterruptEnabledonEncoder) {
+  //if (isInterruptEnabledonEncoder) {
     Serial.println("function executed");
     if ( (encoder1Alast == LOW ) && (encoderControl.digitalRead(0) == HIGH) ) {
       if (encoderControl.digitalRead(1) == LOW)
@@ -177,5 +177,5 @@ void calculateEncoders() {
     }
     Serial.println(encoderValue[1]);
     isInterruptEnabledonEncoder = 0;
-  }
+  //}
 }
