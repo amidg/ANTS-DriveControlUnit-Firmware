@@ -6,6 +6,7 @@
 #include "Motor.h"
 #include "analogWrite.h"
 #include "Adafruit_MCP23017.h"
+#include "EncoderANTS.h"
 
 Motor::Motor(int control1, int control2, int pwmPin) {
   IN1 = control1;

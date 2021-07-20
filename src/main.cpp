@@ -6,6 +6,7 @@
 #include "Motor.h"
 #include <Rotary.h>
 #include <RotaryEncOverMCP.h>
+#include "EncoderANTS.h"
 
 //pin definitions:
 #define GIGAVACENABLE 14
@@ -74,60 +75,60 @@ Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
 //ENCODER CONTROL
+TaskHandle_t encoderCalculator;
 #define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 Adafruit_MCP23017 encoderControl;
 //void RotaryEncoderChanged(bool clockwise, int id); //callback function
 int encoderValue[4]; //all motor encoders
-int encoder1Alast = LOW;
 void encoderHandler(); //interrupt function that
-void calculateEncoders();
-bool isInterruptEnabledonEncoder = 0;
+void calculateEncoders(void * pvParameters);
+bool isInterruptEnabledonEncoder;
 
-/* Array of all rotary encoders and their pins */
-// RotaryEncOverMCP FrontRightEncoder = RotaryEncOverMCP(&encoderControl, 0, 1, &RotaryEncoderChanged, 1); //motor 1 encoder
-// RotaryEncOverMCP FrontLeftEncoder = RotaryEncOverMCP(&encoderControl, 2, 3, &RotaryEncoderChanged, 2); //motor 2 encoder
-// RotaryEncOverMCP RearLeftEncoder = RotaryEncOverMCP(&encoderControl, 4, 5, &RotaryEncoderChanged, 3); //motor 3 encoder
-// RotaryEncOverMCP RearRightEncoder = RotaryEncOverMCP(&encoderControl, 6, 7, &RotaryEncoderChanged, 4); //motor 4 encoder
-
-// RotaryEncOverMCP encoders[] = {
-//   FrontRightEncoder, FrontLeftEncoder, RearLeftEncoder, RearRightEncoder
-// }; 
+EncoderANTS FrontRightEncoder = EncoderANTS(0, 1);
+EncoderANTS FrontLeftEncoder = EncoderANTS(2, 3);
+EncoderANTS RearLeftEncoder = EncoderANTS(4, 5);
+EncoderANTS RearRightEncoder = EncoderANTS(6, 7);
 
 //MAIN FUNCTION
 void setup()
 {
-  Serial.begin (9600);  
+  Serial.begin(9600);  
   Wire.begin();
 
-  //motor control
+  //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
   motorControl.begin(0, &Wire); //specified custom address
 
-  //enable pins motor
   FrontRightMotor.begin(&motorControl); //motor 1
   FrontLeftMotor.begin(&motorControl); //motor 2
-  RearRightMotor.begin(&motorControl); //motor 4
   RearLeftMotor.begin(&motorControl); //motor 3
+  RearRightMotor.begin(&motorControl); //motor 4
 
   pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
-  //encoder control
+  //ENCODER CONTROL RUNS ON CORE 0 (ADDITIONAL)
   encoderControl.begin(2, &Wire); //specified custom address for encoders
   pinMode(ENCODERINTERRUPT, INPUT); //encoder interrupt pin
+
+  FrontRightEncoder.begin(&encoderControl);
+  FrontLeftEncoder.begin(&encoderControl);
+  RearLeftEncoder.begin(&encoderControl);
+  RearRightEncoder.begin(&encoderControl);
+
+  xTaskCreatePinnedToCore(
+                    calculateEncoders,          // Task function.
+                    "Calculate Encoder values", // name of task.
+                    10000,                      // Stack size of task
+                    NULL,                       // parameter of the task
+                    1,                          // priority of the task
+                    &encoderCalculator,         // Task handle to keep track of created task 
+                    0);                         // pin task to core 0
+
+  delay(500); 
 
   //Setup interrupts, OR INTA, INTB together on both ports.
   //thus we will receive an interrupt if something happened on
   //port A or B with only a single INT connection.
-  encoderControl.setupInterrupts(true,false,LOW);
-  encoderControl.pinMode(0, INPUT);
-  encoderControl.pullUp(0, 0);
-  encoderControl.setupInterruptPin(0, CHANGE);
-  encoderControl.pinMode(1, INPUT);
-  encoderControl.pullUp(1, 0);
-  encoderControl.setupInterruptPin(1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING); //configure interrupt
-
-  //initialize encoders
-  //FrontRightEncoder.init();
 }
 
 void loop()
@@ -135,29 +136,22 @@ void loop()
   digitalWrite(GIGAVACENABLE, HIGH);
 
   //TEST MOTOR
-  //for (int i = 0; i < 255; i = i + 5) { //go forward
-    FrontRightMotor.go(&motorControl, 100);
-    //delay(100);
-    calculateEncoders();
-  //} 
+  FrontRightMotor.go(&motorControl, 100);
+  Serial.println(FrontRightEncoder.readCurrentPosition());
+  delay(2000);
 
-  // FrontRightMotor.stop(&motorControl); //go full stop
-  // delay(10000);
+  FrontRightMotor.stop(&motorControl); //go full stop
+  Serial.println(FrontRightEncoder.readCurrentPosition());
+  delay(5000);
 
-  // for (int i = 0; i > -255; i--) { //go reverse
-  //   FrontRightMotor.go(&motorControl, i);
-  //   delay(100);
-  // }
+  FrontRightMotor.go(&motorControl, -100);
+  Serial.println(FrontRightEncoder.readCurrentPosition());
+  delay(2000);
 
-  // FrontRightMotor.stop(&motorControl);
-  // delay(10000);
+  FrontRightMotor.stop(&motorControl);
+  Serial.println(FrontRightEncoder.readCurrentPosition());
+  delay(5000);
 }
-
-
-//encoder callback function
-// void RotaryEncoderChanged(bool clockwise, int id) {
-//     Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
-// }
 
 void IRAM_ATTR encoderHandler() {
   /*
@@ -172,16 +166,15 @@ void IRAM_ATTR encoderHandler() {
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
-void calculateEncoders() {
-  //if (isInterruptEnabledonEncoder) {
-    Serial.println(isInterruptEnabledonEncoder);
-    if ( (encoder1Alast == LOW ) && (encoderControl.digitalRead(0) == HIGH) ) {
-      if (encoderControl.digitalRead(1) == LOW)
-        encoderValue[1] = encoderValue[1] - 1;
-      else 
-        encoderValue[1] = encoderValue[1] + 1;
-    }
-    Serial.println(encoderValue[1]);
-    isInterruptEnabledonEncoder = 0;
-  //}
+void calculateEncoders(void * pvParameters) {
+  while(1) {
+    Serial.print("Encoders running on core: ");
+    Serial.println(xPortGetCoreID());
+    delay(500);
+
+    //FrontRightEncoder.getFeedback(&encoderControl);
+    //FrontLeftEncoder.getFeedback(&encoderControl);
+    //RearLeftEncoder.getFeedback(&encoderControl);
+    //RearRightEncoder.getFeedback(&encoderControl);
+  }
 }

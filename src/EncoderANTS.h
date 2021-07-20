@@ -5,13 +5,17 @@
 #ifndef EncoderANTS_h
 #define EncoderANTS_h
 
+#include "Adafruit_MCP23017.h"
 #include "Arduino.h"
 
 class EncoderANTS
 {
     public:
     EncoderANTS(int controlA, int controlB);
-    int getFeedback();
+    void begin(Adafruit_MCP23017 *encControl);
+    void getFeedback(Adafruit_MCP23017 *encControl);
+    int readCurrentPosition();
+    void setCurrentPosition(int resetPosition);
 
     protected:
     int encoderPosition; 

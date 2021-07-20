@@ -17,6 +17,7 @@ IN1/3---IN2/4----PWM--------OUTPUT1/2
 
 #include "Arduino.h"
 #include "Adafruit_MCP23017.h"
+#include "EncoderANTS.h"
 
 class Motor
 {
