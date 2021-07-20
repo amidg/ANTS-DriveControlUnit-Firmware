@@ -137,19 +137,17 @@ void loop()
 
   //TEST MOTOR
   FrontRightMotor.go(&motorControl, 100);
-  Serial.println(FrontRightEncoder.readCurrentPosition());
-  delay(2000);
+  //Serial.println(FrontRightEncoder.readCurrentPosition());
 
   FrontRightMotor.stop(&motorControl); //go full stop
-  Serial.println(FrontRightEncoder.readCurrentPosition());
+  //Serial.println(FrontRightEncoder.readCurrentPosition());
   delay(5000);
 
   FrontRightMotor.go(&motorControl, -100);
-  Serial.println(FrontRightEncoder.readCurrentPosition());
-  delay(2000);
+  //Serial.println(FrontRightEncoder.readCurrentPosition());
 
   FrontRightMotor.stop(&motorControl);
-  Serial.println(FrontRightEncoder.readCurrentPosition());
+  //Serial.println(FrontRightEncoder.readCurrentPosition());
   delay(5000);
 }
 
@@ -168,13 +166,14 @@ void IRAM_ATTR encoderHandler() {
 
 void calculateEncoders(void * pvParameters) {
   while(1) {
-    Serial.print("Encoders running on core: ");
-    Serial.println(xPortGetCoreID());
-    delay(500);
+    vTaskDelay(1);
+    //Serial.print("Encoders running on core: ");
+    //Serial.println(xPortGetCoreID());
+    //delay(500);
 
-    //FrontRightEncoder.getFeedback(&encoderControl);
-    //FrontLeftEncoder.getFeedback(&encoderControl);
-    //RearLeftEncoder.getFeedback(&encoderControl);
-    //RearRightEncoder.getFeedback(&encoderControl);
+    FrontRightEncoder.getFeedback(&encoderControl);
+    FrontLeftEncoder.getFeedback(&encoderControl);
+    RearLeftEncoder.getFeedback(&encoderControl);
+    RearRightEncoder.getFeedback(&encoderControl);
   }
 }
