@@ -89,14 +89,18 @@ EncoderANTS FrontLeftEncoder = EncoderANTS(2, 3);
 EncoderANTS RearLeftEncoder = EncoderANTS(4, 5);
 EncoderANTS RearRightEncoder = EncoderANTS(6, 7);
 
+TwoWire motorInterface = TwoWire(0);
+TwoWire encoderInterface = TwoWire(1);
+
 //MAIN FUNCTION
 void setup()
 {
   Serial.begin(9600);  
-  Wire.begin();
+  motorInterface.begin(21, 22, 100000);
+  encoderInterface.begin(21, 22, 100000);
 
   //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
-  motorControl.begin(0, &Wire); //specified custom address
+  motorControl.begin(0, &motorInterface); //specified custom address
 
   FrontRightMotor.begin(&motorControl); //motor 1
   FrontLeftMotor.begin(&motorControl); //motor 2
@@ -106,7 +110,7 @@ void setup()
   pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
   //ENCODER CONTROL RUNS ON CORE 0 (ADDITIONAL)
-  encoderControl.begin(2, &Wire); //specified custom address for encoders
+  encoderControl.begin(2, &encoderInterface); //specified custom address for encoders
   pinMode(ENCODERINTERRUPT, INPUT); //encoder interrupt pin
 
   FrontRightEncoder.begin(&encoderControl);
@@ -137,18 +141,18 @@ void loop()
 
   //TEST MOTOR
   FrontRightMotor.go(&motorControl, 100);
-  //Serial.println(FrontRightEncoder.readCurrentPosition());
+  Serial.println(FrontRightEncoder.readCurrentPosition());
 
   FrontRightMotor.stop(&motorControl); //go full stop
-  //Serial.println(FrontRightEncoder.readCurrentPosition());
-  delay(5000);
+  Serial.println(FrontRightEncoder.readCurrentPosition());
+  delay(2000);
 
   FrontRightMotor.go(&motorControl, -100);
-  //Serial.println(FrontRightEncoder.readCurrentPosition());
+  Serial.println(FrontRightEncoder.readCurrentPosition());
 
   FrontRightMotor.stop(&motorControl);
-  //Serial.println(FrontRightEncoder.readCurrentPosition());
-  delay(5000);
+  Serial.println(FrontRightEncoder.readCurrentPosition());
+  delay(2000);
 }
 
 void IRAM_ATTR encoderHandler() {
@@ -167,10 +171,6 @@ void IRAM_ATTR encoderHandler() {
 void calculateEncoders(void * pvParameters) {
   while(1) {
     vTaskDelay(1);
-    //Serial.print("Encoders running on core: ");
-    //Serial.println(xPortGetCoreID());
-    //delay(500);
-
     FrontRightEncoder.getFeedback(&encoderControl);
     FrontLeftEncoder.getFeedback(&encoderControl);
     RearLeftEncoder.getFeedback(&encoderControl);
