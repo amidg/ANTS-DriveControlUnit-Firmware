@@ -136,7 +136,7 @@ void loop()
 
   //TEST MOTOR
   //for (int i = 0; i < 255; i = i + 5) { //go forward
-    FrontRightMotor.go(&motorControl, 255);
+    FrontRightMotor.go(&motorControl, 100);
     //delay(100);
     calculateEncoders();
   //} 
@@ -161,6 +161,7 @@ void loop()
 
 void encoderHandler() {
   //detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
+  digitalWrite(GIGAVACENABLE, LOW);
   isInterruptEnabledonEncoder = 1;
   //attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
