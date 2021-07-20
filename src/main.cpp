@@ -159,7 +159,7 @@ void loop()
 //     Serial.println("Encoder " + String(id) + ": " + (clockwise ? String("clockwise") : String("counter-clock-wise")));
 // }
 
-void encoderHandler() {
+void IRAM_ATTR encoderHandler() {
   //detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
   digitalWrite(GIGAVACENABLE, LOW);
   isInterruptEnabledonEncoder = 1;
