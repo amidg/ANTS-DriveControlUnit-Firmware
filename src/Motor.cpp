@@ -7,8 +7,7 @@
 #include "analogWrite.h"
 #include "Adafruit_MCP23017.h"
 
-Motor::Motor(int control1, int control2, int pwmPin)
-{
+Motor::Motor(int control1, int control2, int pwmPin) {
   IN1 = control1;
   IN2 = control2;
   PWM = pwmPin;
@@ -23,8 +22,7 @@ void Motor::begin(Adafruit_MCP23017 *control) {
   control->pullUp(IN2, 0);
 } 
 
-void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
-{
+void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   int power = abs(directionAndPower);
   
   //controls side
@@ -54,8 +52,7 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower)
   currentPWM = power; //set current PWM, needed for prevent soft start cycling
 }
 
-void Motor::stop(Adafruit_MCP23017 *control)
-{
+void Motor::stop(Adafruit_MCP23017 *control) {
   for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
     analogWrite(PWM, i);
     delay(10);

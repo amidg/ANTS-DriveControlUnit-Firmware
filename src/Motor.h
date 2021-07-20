@@ -21,7 +21,7 @@ IN1/3---IN2/4----PWM--------OUTPUT1/2
 class Motor
 {
     public:
-    Motor(int control1, int control2, int pwmPin);
+    Motor(int control1, int control2, int pwmPin); //1 channel/motor
     void begin(Adafruit_MCP23017 *control);
     void go(Adafruit_MCP23017 *control, int directionAndPower);
     void stop(Adafruit_MCP23017 *control);

@@ -138,7 +138,7 @@ void loop()
   //for (int i = 0; i < 255; i = i + 5) { //go forward
     FrontRightMotor.go(&motorControl, 100);
     //delay(100);
-    //calculateEncoders();
+    calculateEncoders();
   //} 
 
   // FrontRightMotor.stop(&motorControl); //go full stop
