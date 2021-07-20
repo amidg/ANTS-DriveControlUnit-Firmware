@@ -160,15 +160,21 @@ void loop()
 // }
 
 void IRAM_ATTR encoderHandler() {
+  /*
+      Interrupt Service routine disables timing:
+      - no serial
+      - no internla i2c
+
+      also do not use GIGAVAC pin because it causes relay knocking 
+  */
   detachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT));
-  Serial.println("interrupt");
   isInterruptEnabledonEncoder = 1;
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
 void calculateEncoders() {
   //if (isInterruptEnabledonEncoder) {
-    Serial.println("function executed");
+    Serial.println(isInterruptEnabledonEncoder);
     if ( (encoder1Alast == LOW ) && (encoderControl.digitalRead(0) == HIGH) ) {
       if (encoderControl.digitalRead(1) == LOW)
         encoderValue[1] = encoderValue[1] - 1;
