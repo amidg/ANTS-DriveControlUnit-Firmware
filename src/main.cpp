@@ -12,7 +12,7 @@
 #include "std_msgs/Int16.h"
 #include "std_msgs/Int32.h"
 
-#define IGRNOREDEBUG 1 //must be set to 0 to enable fully working 
+#define IGNOREDEBUG 1 //must be set to 0 to enable fully working 
 
 //MOTOR CONTROL
 Adafruit_MCP23017 motorControl;
@@ -107,7 +107,6 @@ IPAddress ip(192, 168, 1, 3);
 IPAddress server(192,168,100,100);
 const uint16_t serverPort = 11411;
 
-
 //ROS DEFINITIONS =============================================================================
 ros::NodeHandle DCU1;
 // Make a chatter publisher
@@ -137,6 +136,7 @@ ros::Subscriber<std_msgs::Int16> RearLeftSpeed("/dcu1/motor3/cmd", RearLeftROS);
 ros::Subscriber<std_msgs::Int16> RearRightSpeed("/dcu1/motor4/cmd", RearRightROS); //Rear Right Wheel, motor 4
 
 //contactor power
+int contactorEnabled;
 ros::Subscriber<std_msgs::Int16> PowerLock("/dcu1/contactor", unlockPowerToMotors);
 std_msgs::String powerLocker_msg;
 ros::Publisher motor_power("gigavac_feedback", &powerLocker_msg);
@@ -243,11 +243,8 @@ void loop()
     Serial.println("ERROR: NO ROS CONNECTION");
   }
 
-  // topic publishers
-  motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
-
   //enable GIGAVAC
-  unlockPowerToMotors(const std_msgs::Int16& msg5);
+  motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
 
   //run motors based on ROS -> single DCU 4ch operation
   moveMotorsBasedOnROS(); 
@@ -277,9 +274,10 @@ void loop()
 // INTERRUPT FUNCTION ==================================================================================
 void IRAM_ATTR encoderHandler() {
   /*
-      Interrupt Service routine disables timing:
+      Interrupt Service routine disables timing within the CPU cores
       - no serial
       - no internal i2c
+      - do NOT run long commands here because it affects ROS performance due to the same timing issue
 
       also do not use GIGAVAC pin because it causes relay knocking 
   */
@@ -346,12 +344,14 @@ void moveMotorsBasedOnROS() {
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   //unlock power to motors based on ROS command
-  if(msg5.data == 0) {
+  if(msg5.data == 0) { //turn off GIGAVAC
+    contactorEnabled = msg5.data;
     digitalWrite(GIGAVACENABLE, HIGH); //HIGH turns it off
     powerLocker_msg.data = "POWER IS OFF";
   }
 
-  else if (msg5.data == 1) {
+  else if (msg5.data == 1) { //turn on GIGAVAC
+    contactorEnabled = msg5.data;
     digitalWrite(GIGAVACENABLE, LOW); //LOW turns it on
     powerLocker_msg.data = "POWER IS ON";
   }
