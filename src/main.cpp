@@ -9,6 +9,7 @@
 #include "EncoderANTS.h"
 #include "ros.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Int16.h"
 
 //MOTOR CONTROL
 Adafruit_MCP23017 motorControl;
@@ -74,6 +75,9 @@ Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
+void moveMotorsBasedOnROS();
+void moveDualDCUmotorsBasedOnROS();
+
 //ENCODER CONTROL =============================================================================
 TaskHandle_t encoderCalculator;
 #define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
@@ -92,22 +96,41 @@ EncoderANTS RearRightEncoder = EncoderANTS(6, 7);
 TwoWire motorInterface = TwoWire(0);
 TwoWire encoderInterface = TwoWire(1);
 
-//ROS DEFINITIONS: ============================================================================
+//WI-FI DEFINITIONS: ============================================================================
 #define ESP32
 const char* ssid     = "AutoBot1_2G";
 const char* password = "mse2021cap";
 IPAddress ip(192, 168, 1, 3);
 IPAddress server(192,168,100,100);
 const uint16_t serverPort = 11411;
-ros::NodeHandle nh;
+
+
+//ROS DEFINITIONS =============================================================================
+ros::NodeHandle DCU1;
 // Make a chatter publisher
 std_msgs::String str_msg;
-ros::Publisher chatter("dcu", &str_msg);
+ros::Publisher chatter("dcu_test", &str_msg);
 
 // Be polite and say hello
 char hello[13] = "DCU test";
 uint16_t period = 20;
 uint32_t last_time = 0;
+
+//ROS motor control
+void FrontRightROS(const std_msgs::Int16& msg1); //motor 1
+void FrontLeftROS(const std_msgs::Int16& msg2); //motor 2
+void RearLeftROS(const std_msgs::Int16& msg3); //motor 3
+void RearRightROS(const std_msgs::Int16& msg4); //motor 4
+
+int FrontRightMotor1speed;
+int FrontLeftMotor2speed;
+int RearLeftMotor3speed;
+int RearRightMotor4speed; 
+
+ros::Subscriber<std_msgs::Int16> FrontRightSpeed("/dcu1/motor1/cmd", FrontRightROS); //Front Right wheel, motor 1
+ros::Subscriber<std_msgs::Int16> FrontLeftSpeed("/dcu1/motor2/cmd", FrontLeftROS); //Front Left Wheel, motor 2
+ros::Subscriber<std_msgs::Int16> RearLeftSpeed("/dcu1/motor3/cmd", RearLeftROS); //Rear Left wheel, motor 3
+ros::Subscriber<std_msgs::Int16> RearRightSpeed("/dcu1/motor4/cmd", RearRightROS); //Rear Right Wheel, motor 4
 
 //MAIN FUNCTION ===============================================================================
 void setup()
@@ -166,21 +189,33 @@ void setup()
   Serial.println(WiFi.localIP());
 
   // Set the connection to rosserial socket server
-  nh.getHardware()->setConnection(server, serverPort);
-  nh.initNode();
+  DCU1.getHardware()->setConnection(server, serverPort);
+  DCU1.initNode();
 
   // Another way to get IP
   Serial.print("IP = ");
-  Serial.println(nh.getHardware()->getLocalIP());
+  Serial.println(DCU1.getHardware()->getLocalIP());
 
   // Start to be polite
-  nh.advertise(chatter);
+  DCU1.advertise(chatter);
 }
 
 // LOOP FUNCTION ====================================================================================
 void loop()
 {
-  // digitalWrite(GIGAVACENABLE, HIGH);
+  //first of all check DCU connection to ROS -> do not start program if no ROS node
+  while (!DCU1.connected()) {
+    Serial.println("ERROR: NO ROS CONNECTION");
+  }
+
+  //enable GIGAVAC
+  digitalWrite(GIGAVACENABLE, HIGH);
+
+  //run motors based on ROS -> single DCU 4ch operation
+  moveMotorsBasedOnROS(); 
+
+  //run motors based on ROS -> dual DCU 4to2ch operation
+  //moveDualDCUmotorsBasedOnROS();
 
   // //TEST MOTOR
   // FrontRightMotor.go(&motorControl, 100);
@@ -197,20 +232,7 @@ void loop()
   // Serial.println(FrontRightEncoder.readCurrentPosition());
   // delay(2000);
 
-  if(millis() - last_time >= period)
-  {
-    last_time = millis();
-    if (nh.connected())
-    {
-      Serial.println("Connected");
-      // Say hello
-      str_msg.data = hello;
-      chatter.publish( &str_msg );
-    } else {
-      Serial.println("Not Connected");
-    }
-  }
-  nh.spinOnce();
+  DCU1.spinOnce();
   delay(1);
 }
 
@@ -219,7 +241,7 @@ void IRAM_ATTR encoderHandler() {
   /*
       Interrupt Service routine disables timing:
       - no serial
-      - no internla i2c
+      - no internal i2c
 
       also do not use GIGAVAC pin because it causes relay knocking 
   */
@@ -236,5 +258,48 @@ void calculateEncoders(void * pvParameters) {
     FrontLeftEncoder.getFeedback(&encoderControl);
     RearLeftEncoder.getFeedback(&encoderControl);
     RearRightEncoder.getFeedback(&encoderControl);
+  }
+}
+
+// ADDITIONAL FUNCTIONS ================================================================================
+void FrontRightROS(const std_msgs::Int16& msg1) { //motor 1 data from ROS to motor control
+  FrontRightMotor1speed = msg1.data;
+}
+
+void FrontLeftROS(const std_msgs::Int16& msg2) { //motor 2 data from ROS to motor control
+  FrontLeftMotor2speed = msg2.data;
+}
+void RearLeftROS(const std_msgs::Int16& msg3) { //motor 3 data from ROS to motor control
+  RearLeftMotor3speed = msg3.data;
+} 
+
+void RearRightROS(const std_msgs::Int16& msg4) { //motor 4 data from ROS to motor control
+  RearRightMotor4speed = msg4.data;
+}
+
+void moveMotorsBasedOnROS() {
+  //make sure to stop motors if there is 0 velocity command from ROS
+  if (FrontRightMotor1speed == 0) {
+    FrontRightMotor.stop(&motorControl);
+  } else {
+    FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+  }
+
+  if (FrontLeftMotor2speed == 0) {
+    FrontLeftMotor.stop(&motorControl);
+  } else {
+    FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+  }
+
+  if (RearLeftMotor3speed == 0) {
+    RearLeftMotor.stop(&motorControl);
+  } else {
+    RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+  }
+
+  if (RearRightMotor4speed == 0) {
+    RearRightMotor.stop(&motorControl);
+  } else {
+    RearRightMotor.go(&motorControl, RearRightMotor4speed);
   }
 }
