@@ -12,6 +12,8 @@
 #include "std_msgs/Int16.h"
 #include "std_msgs/Int32.h"
 
+#define IGRNOREDEBUG 1 //must be set to 0 to enable fully working 
+
 //MOTOR CONTROL
 Adafruit_MCP23017 motorControl;
 
@@ -237,7 +239,7 @@ void setup()
 void loop()
 {
   //first of all check DCU connection to ROS -> do not start program if no ROS node
-  while (!DCU1.connected()) {
+  while (!DCU1.connected() && !IGNOREDEBUG) {
     Serial.println("ERROR: NO ROS CONNECTION");
   }
 
