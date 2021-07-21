@@ -96,8 +96,8 @@ TwoWire encoderInterface = TwoWire(1);
 void setup()
 {
   Serial.begin(9600);  
-  motorInterface.begin(21, 22, 100000);
-  encoderInterface.begin(21, 22, 100000);
+  //motorInterface.begin(21, 22, 100000);
+  //encoderInterface.begin(21, 22, 100000);
 
   //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
   motorControl.begin(0, &motorInterface); //specified custom address
@@ -121,9 +121,9 @@ void setup()
   xTaskCreatePinnedToCore(
                     calculateEncoders,          // Task function.
                     "Calculate Encoder values", // name of task.
-                    10000,                      // Stack size of task
+                    100000,                      // Stack size of task
                     NULL,                       // parameter of the task
-                    1,                          // priority of the task
+                    0,                          // priority of the task
                     &encoderCalculator,         // Task handle to keep track of created task 
                     0);                         // pin task to core 0
 
