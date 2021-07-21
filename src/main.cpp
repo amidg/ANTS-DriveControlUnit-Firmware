@@ -7,11 +7,14 @@
 #include <Rotary.h>
 #include <RotaryEncOverMCP.h>
 #include "EncoderANTS.h"
+#include "ros.h"
+#include "std_msgs/String.h"
 
-//pin definitions:
+//MOTOR CONTROL
+Adafruit_MCP23017 motorControl;
+
 #define GIGAVACENABLE 14
 
-//motor definitions
 #define MOTOR1PWM 26
 #define MOTOR1IN1 0
 #define MOTOR1IN2 1
@@ -65,16 +68,13 @@
   GPA7 -> ENC4-B ---> USE PIN ID 7
 */
 
-//MOTOR CONTROL
-Adafruit_MCP23017 motorControl;
-
 //assumed direction when motherboard ethernet side facing rear of the robot
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
 Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
 
-//ENCODER CONTROL
+//ENCODER CONTROL =============================================================================
 TaskHandle_t encoderCalculator;
 #define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 Adafruit_MCP23017 encoderControl;
@@ -92,12 +92,30 @@ EncoderANTS RearRightEncoder = EncoderANTS(6, 7);
 TwoWire motorInterface = TwoWire(0);
 TwoWire encoderInterface = TwoWire(1);
 
-//MAIN FUNCTION
+//ROS DEFINITIONS: ============================================================================
+#define ESP32
+const char* ssid     = "AutoBot1_2G";
+const char* password = "mse2021cap";
+IPAddress ip(192, 168, 1, 3);
+IPAddress server(192,168,100,100);
+const uint16_t serverPort = 11411;
+ros::NodeHandle nh;
+// Make a chatter publisher
+std_msgs::String str_msg;
+ros::Publisher chatter("chatter", &str_msg);
+
+// Be polite and say hello
+char hello[13] = "hello world!";
+uint16_t period = 20;
+uint32_t last_time = 0;
+
+//MAIN FUNCTION ===============================================================================
 void setup()
 {
   Serial.begin(9600);  
-  //motorInterface.begin(21, 22, 100000);
-  //encoderInterface.begin(21, 22, 100000);
+
+  motorInterface.begin(21, 22, 100000);
+  encoderInterface.begin(21, 22, 100000);
 
   //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
   motorControl.begin(0, &motorInterface); //specified custom address
@@ -133,28 +151,70 @@ void setup()
   //thus we will receive an interrupt if something happened on
   //port A or B with only a single INT connection.
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING); //configure interrupt
+
+  //ROS PART --------------------------------------------------------------------------------------------------
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Set the connection to rosserial socket server
+  nh.getHardware()->setConnection(server, serverPort);
+  nh.initNode();
+
+  // Another way to get IP
+  Serial.print("IP = ");
+  Serial.println(nh.getHardware()->getLocalIP());
+
+  // Start to be polite
+  nh.advertise(chatter);
 }
 
+// LOOP FUNCTION ====================================================================================
 void loop()
 {
-  digitalWrite(GIGAVACENABLE, HIGH);
+  // digitalWrite(GIGAVACENABLE, HIGH);
 
-  //TEST MOTOR
-  FrontRightMotor.go(&motorControl, 100);
-  Serial.println(FrontRightEncoder.readCurrentPosition());
+  // //TEST MOTOR
+  // FrontRightMotor.go(&motorControl, 100);
+  // Serial.println(FrontRightEncoder.readCurrentPosition());
 
-  FrontRightMotor.stop(&motorControl); //go full stop
-  Serial.println(FrontRightEncoder.readCurrentPosition());
-  delay(2000);
+  // FrontRightMotor.stop(&motorControl); //go full stop
+  // Serial.println(FrontRightEncoder.readCurrentPosition());
+  // delay(2000);
 
-  FrontRightMotor.go(&motorControl, -100);
-  Serial.println(FrontRightEncoder.readCurrentPosition());
+  // FrontRightMotor.go(&motorControl, -100);
+  // Serial.println(FrontRightEncoder.readCurrentPosition());
 
-  FrontRightMotor.stop(&motorControl);
-  Serial.println(FrontRightEncoder.readCurrentPosition());
-  delay(2000);
+  // FrontRightMotor.stop(&motorControl);
+  // Serial.println(FrontRightEncoder.readCurrentPosition());
+  // delay(2000);
+
+  if(millis() - last_time >= period)
+  {
+    last_time = millis();
+    if (nh.connected())
+    {
+      Serial.println("Connected");
+      // Say hello
+      str_msg.data = hello;
+      chatter.publish( &str_msg );
+    } else {
+      Serial.println("Not Connected");
+    }
+  }
+  nh.spinOnce();
+  delay(1);
 }
 
+// INTERRUPT FUNCTION ==================================================================================
 void IRAM_ATTR encoderHandler() {
   /*
       Interrupt Service routine disables timing:
@@ -168,6 +228,7 @@ void IRAM_ATTR encoderHandler() {
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING);
 }
 
+// 2ND CORE TASK ================================================================================
 void calculateEncoders(void * pvParameters) {
   while(1) {
     vTaskDelay(1);
