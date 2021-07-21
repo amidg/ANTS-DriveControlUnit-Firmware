@@ -1,0 +1,43 @@
+ROS service/nodes:
+When robot is asked to do something -> service
+
+Power Control Unit (PCU):
+1. Battery Charging relay -> service
+2. Battery voltage -> topic
+3. Battery current -> topic
+4. PC voltage -> topic
+5. PC current -> topic
+6. Motor current -> topic
+7. Motor voltage -> topic
+8. 3V3 current -> topic
+9. 5V current -> topic
+10. Speaker current -> topic
+11. Speaker voltage -> topic
+12. router current -> topic
+13. router voltage -> topic
+
+Drive Control Unit (DCU):
+1. Gigavac contactor -> service
+2. Motor1 -> topic (subscribing topic)
+3. Motor2 -> topic
+4. Motor3 -> topic
+5. Motor4 -> topic
+6. Encoder1 -> topic (publishing)
+7. Encoder2 -> topic 
+8. Encoder3 -> topic
+9. Encoder4 -> topic
+
+topic name (3 layers max):
+/dcu1/motor1/cmd
+/dcu1/motor1/enc
+/dcu2/contactor
+/pcu/charging
+/pcu/pc/voltage
+
+Priorities:
+Motors moving
+Encoders
+Battery voltage
+Battery current
+Contactor
+
