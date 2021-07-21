@@ -102,10 +102,10 @@ const uint16_t serverPort = 11411;
 ros::NodeHandle nh;
 // Make a chatter publisher
 std_msgs::String str_msg;
-ros::Publisher chatter("chatter", &str_msg);
+ros::Publisher chatter("dcu", &str_msg);
 
 // Be polite and say hello
-char hello[13] = "hello world!";
+char hello[13] = "DCU test";
 uint16_t period = 20;
 uint32_t last_time = 0;
 
