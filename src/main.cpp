@@ -10,6 +10,8 @@
 #include "ANTS_ROS.h"
 #include "ANTShardwareDescription.h"
 
+#define IGNOREDEBUG 1 //must be set to 0 to enable fully working 
+
 //MOTOR CONTROL
 Adafruit_MCP23017 motorControl;
 
@@ -46,6 +48,53 @@ const char* password = "mse2021cap";
 IPAddress ip(192, 168, 1, 3);
 IPAddress server(192,168,100,100);
 const uint16_t serverPort = 11411;
+
+//ROS DEFINITIONS =============================================================================
+ros::NodeHandle DCU1;
+// Make a chatter publisher
+std_msgs::String str_msg;
+ros::Publisher chatter("dcu_test", &str_msg);
+
+// Be polite and say hello
+char hello[13] = "DCU test";
+uint16_t period = 20;
+uint32_t last_time = 0;
+
+//ROS motor control
+void FrontRightROS(const std_msgs::Int16& msg1); //motor 1
+void FrontLeftROS(const std_msgs::Int16& msg2); //motor 2
+void RearLeftROS(const std_msgs::Int16& msg3); //motor 3
+void RearRightROS(const std_msgs::Int16& msg4); //motor 4
+void unlockPowerToMotors(const std_msgs::Int16& msg5); //GIGAVAC contactor
+
+int FrontRightMotor1speed;
+int FrontLeftMotor2speed;
+int RearLeftMotor3speed;
+int RearRightMotor4speed; 
+
+ros::Subscriber<std_msgs::Int16> FrontRightSpeed("/dcu1/motor1/cmd", FrontRightROS); //Front Right wheel, motor 1
+ros::Subscriber<std_msgs::Int16> FrontLeftSpeed("/dcu1/motor2/cmd", FrontLeftROS); //Front Left Wheel, motor 2
+ros::Subscriber<std_msgs::Int16> RearLeftSpeed("/dcu1/motor3/cmd", RearLeftROS); //Rear Left wheel, motor 3
+ros::Subscriber<std_msgs::Int16> RearRightSpeed("/dcu1/motor4/cmd", RearRightROS); //Rear Right Wheel, motor 4
+
+//contactor power
+int contactorEnabled;
+ros::Subscriber<std_msgs::Int16> PowerLock("/dcu1/contactor", unlockPowerToMotors);
+std_msgs::String powerLocker_msg;
+ros::Publisher motor_power("gigavac_feedback", &powerLocker_msg);
+
+//ROS Encoder Control:
+std_msgs::Int32 FrontRightEncMsg; //Front Right, motor 1 encoder message to ROS
+ros::Publisher FrontRightEncPublish("/dcu1/motor1/enc", &FrontRightEncMsg);
+
+std_msgs::Int32 FrontLeftEncMsg; //Front Left, motor 2 encoder message to ROS
+ros::Publisher FrontLeftEncPublish("/dcu1/motor2/enc", &FrontLeftEncMsg);
+
+std_msgs::Int32 RearLeftEncMsg; //Rear Left, motor 3 encoder message to ROS
+ros::Publisher RearLeftEncPublish("/dcu1/motor3/enc", &RearLeftEncMsg);
+
+std_msgs::Int32 RearRightEncMsg; //Rear Right, motor 4 encoder message to ROS
+ros::Publisher RearRightEncPublish("/dcu1/motor4/enc", &RearRightEncMsg);
 
 //MAIN FUNCTION ===============================================================================
 void setup()
@@ -132,15 +181,12 @@ void setup()
 void loop()
 {
   //first of all check DCU connection to ROS -> do not start program if no ROS node
-  while (!DCU1.connected()) {
+  while (!DCU1.connected() && !IGNOREDEBUG) {
     Serial.println("ERROR: NO ROS CONNECTION");
   }
 
-  // topic publishers
-  motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
-
   //enable GIGAVAC
-  unlockPowerToMotors(const std_msgs::Int16& msg5);
+  motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
 
   //run motors based on ROS -> single DCU 4ch operation
   moveMotorsBasedOnROS(); 
@@ -170,9 +216,10 @@ void loop()
 // INTERRUPT FUNCTION ==================================================================================
 void IRAM_ATTR encoderHandler() {
   /*
-      Interrupt Service routine disables timing:
+      Interrupt Service routine disables timing within the CPU cores
       - no serial
       - no internal i2c
+      - do NOT run long commands here because it affects ROS performance due to the same timing issue
 
       also do not use GIGAVAC pin because it causes relay knocking 
   */
@@ -239,12 +286,14 @@ void moveMotorsBasedOnROS() {
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   //unlock power to motors based on ROS command
-  if(msg5.data == 0) {
+  if(msg5.data == 0) { //turn off GIGAVAC
+    contactorEnabled = msg5.data;
     digitalWrite(GIGAVACENABLE, HIGH); //HIGH turns it off
     powerLocker_msg.data = "POWER IS OFF";
   }
 
-  else if (msg5.data == 1) {
+  else if (msg5.data == 1) { //turn on GIGAVAC
+    contactorEnabled = msg5.data;
     digitalWrite(GIGAVACENABLE, LOW); //LOW turns it on
     powerLocker_msg.data = "POWER IS ON";
   }
