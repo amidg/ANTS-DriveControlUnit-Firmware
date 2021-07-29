@@ -8,6 +8,7 @@
 #include "Adafruit_MCP23017.h"
 
 Motor::Motor(int control1, int control2, int pwmPin) {
+  //1ch motor constructor
   IN1 = control1;
   IN2 = control2;
 
@@ -55,37 +56,6 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
     //if positive, go forward
     control->digitalWrite(IN1, HIGH);
     control->digitalWrite(IN2, LOW);
-  } else if (directionAndPower < 0) {
-    //if negative, go backwards
-    control->digitalWrite(IN1, LOW);
-    control->digitalWrite(IN2, HIGH);
-  }
-
-  if (currentPWM <= power) {
-    for (int i = currentPWM; i < power; i++) {
-      analogWrite(PWM1, i);
-      delay(50);
-    }
-    
-  } else if (currentPWM > power) {
-    for (int i = currentPWM; i > power; i--) {
-      analogWrite(PWM1, i);
-      delay(50);
-    }
-  }
-
-  currentPWM = power; //set current PWM, needed for prevent soft start cycling
-}
-
-void Motor::go2ch(Adafruit_MCP23017 *control, int directionAndPower) {
-  //move motors in 2ch operation, this function requires hardware verification to ensure no damage to DCU
-  int power = abs(directionAndPower);
-  
-  //controls side
-  if(directionAndPower >= 0) {
-    //if positive, go forward
-    control->digitalWrite(IN1, HIGH);
-    control->digitalWrite(IN2, LOW);
     control->digitalWrite(IN3, HIGH);
     control->digitalWrite(IN4, LOW);
   } else if (directionAndPower < 0) {
@@ -117,25 +87,14 @@ void Motor::go2ch(Adafruit_MCP23017 *control, int directionAndPower) {
 void Motor::stop(Adafruit_MCP23017 *control) {
   for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
     analogWrite(PWM1, i);
-    delay(10);
-  }
-
-  control->digitalWrite(IN1, LOW); //fully turn off motors
-  control->digitalWrite(IN2, LOW); 
-
-  currentPWM = 0;
-}
-
-void Motor::stop2ch(Adafruit_MCP23017 *control) {
-  //stopping in two channel mode
-  for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
-    analogWrite(PWM1, i);
     analogWrite(PWM2, i);
     delay(10);
   }
 
   control->digitalWrite(IN1, LOW); //fully turn off motors
   control->digitalWrite(IN2, LOW); 
+  control->digitalWrite(IN3, LOW);
+  control->digitalWrite(IN4, LOW);
 
   currentPWM = 0;
 }

@@ -16,10 +16,10 @@
 Adafruit_MCP23017 motorControl;
 
 //assumed direction when motherboard ethernet side facing rear of the robot
-Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
-Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, motor 2
-Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, motor 3
-Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR4PWM); //RR, motor 4
+Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR2IN1, MOTOR2IN2, MOTOR2PWM, MOTOR2PWM); //FR, motor 1 -> combines both 1st and 2nd motor channels
+//Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, MOTOR2 NOT EXECUTED IN DCU1 
+//Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, MOTOR3 NOT EXECTUTED IN DCU1
+Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR3IN1, MOTOR3IN2, MOTOR4PWM, MOTOR3PWM); //RR, motor 4 -> combines both 4th and 3rd motor channels
 
 void moveMotorsBasedOnROS();
 void moveDualDCUmotorsBasedOnROS();
@@ -61,8 +61,8 @@ void setup()
   motorControl.begin(0, &motorInterface); //specified custom address
 
   FrontRightMotor.begin(&motorControl); //motor 1
-  FrontLeftMotor.begin(&motorControl); //motor 2
-  RearLeftMotor.begin(&motorControl); //motor 3
+  //FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
+  //RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
   RearRightMotor.begin(&motorControl); //motor 4
 
   pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
@@ -116,8 +116,8 @@ void setup()
 
     //motor subs -> read DCU power from ROS and apply to motors
     DCU1.subscribe(FrontRightSpeed); //motor 1
-    DCU1.subscribe(FrontLeftSpeed); //motor 2
-    DCU1.subscribe(RearLeftSpeed); //motor 3
+    //DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
+    //DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
     DCU1.subscribe(RearRightSpeed); //motor 4
 
     //motor publishing -> read encoders on DCU side and publish them to ROS
@@ -146,7 +146,7 @@ void loop()
   FrontRightMotor.go(&motorControl, 100);
   // Serial.println(FrontRightEncoder.readCurrentPosition());
 
-  FrontLeftMotor.go(&motorControl, 100);
+  RearRightMotor.go(&motorControl, 100);
 
   //DCU1.spinOnce();
   //delay(1);
@@ -202,25 +202,25 @@ void moveMotorsBasedOnROS() {
   //make sure to stop motors if there is 0 velocity command from ROS
   digitalWrite(GIGAVACENABLE, HIGH);
 
-  if (FrontRightMotor1speed == 0) {
+  if (FrontRightMotor1speed == 0) { // --> IGNORE IN DCU2
     FrontRightMotor.stop(&motorControl);
   } else {
     FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
   }
 
-  if (FrontLeftMotor2speed == 0) {
-    FrontLeftMotor.stop(&motorControl);
-  } else {
-    FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
-  }
+  // if (FrontLeftMotor2speed == 0) { // --> IGNORE IN DCU1
+  //   FrontLeftMotor.stop(&motorControl);
+  // } else {
+  //   FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+  // }
 
-  if (RearLeftMotor3speed == 0) {
-    RearLeftMotor.stop(&motorControl);
-  } else {
-    RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
-  }
+  // if (RearLeftMotor3speed == 0) {
+  //   RearLeftMotor.stop(&motorControl);
+  // } else {
+  //   RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+  // }
 
-  if (RearRightMotor4speed == 0) {
+  if (RearRightMotor4speed == 0) { //--> IGNORE IN DCU2
     RearRightMotor.stop(&motorControl);
   } else {
     RearRightMotor.go(&motorControl, RearRightMotor4speed);
