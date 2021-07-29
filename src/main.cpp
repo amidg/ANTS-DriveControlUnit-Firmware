@@ -137,28 +137,19 @@ void loop()
   }
 
   //enable GIGAVAC
-  motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
+  //motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
 
   //run motors based on ROS -> single DCU 4ch operation
-  moveMotorsBasedOnROS(); 
+  //moveMotorsBasedOnROS(); 
 
   // //TEST MOTOR
-  // FrontRightMotor.go(&motorControl, 100);
+  FrontRightMotor.go(&motorControl, 100);
   // Serial.println(FrontRightEncoder.readCurrentPosition());
 
-  // FrontRightMotor.stop(&motorControl); //go full stop
-  // Serial.println(FrontRightEncoder.readCurrentPosition());
-  // delay(2000);
+  FrontLeftMotor.go(&motorControl, 100);
 
-  // FrontRightMotor.go(&motorControl, -100);
-  // Serial.println(FrontRightEncoder.readCurrentPosition());
-
-  // FrontRightMotor.stop(&motorControl);
-  // Serial.println(FrontRightEncoder.readCurrentPosition());
-  // delay(2000);
-
-  DCU1.spinOnce();
-  delay(1);
+  //DCU1.spinOnce();
+  //delay(1);
 }
 
 // INTERRUPT FUNCTION ==================================================================================
