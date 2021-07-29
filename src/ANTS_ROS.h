@@ -6,14 +6,6 @@
 
 //ROS DEFINITIONS =============================================================================
 ros::NodeHandle DCU1;
-// Make a chatter publisher
-std_msgs::String str_msg;
-ros::Publisher chatter("dcu_test", &str_msg);
-
-// Be polite and say hello
-char hello[13] = "DCU test";
-uint16_t period = 20;
-uint32_t last_time = 0;
 
 //ROS motor control
 void FrontRightROS(const std_msgs::Int16& msg1); //motor 1

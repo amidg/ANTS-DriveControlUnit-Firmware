@@ -49,53 +49,6 @@ IPAddress ip(192, 168, 1, 3);
 IPAddress server(192,168,100,100);
 const uint16_t serverPort = 11411;
 
-//ROS DEFINITIONS =============================================================================
-ros::NodeHandle DCU1;
-// Make a chatter publisher
-std_msgs::String str_msg;
-ros::Publisher chatter("dcu_test", &str_msg);
-
-// Be polite and say hello
-char hello[13] = "DCU test";
-uint16_t period = 20;
-uint32_t last_time = 0;
-
-//ROS motor control
-void FrontRightROS(const std_msgs::Int16& msg1); //motor 1
-void FrontLeftROS(const std_msgs::Int16& msg2); //motor 2
-void RearLeftROS(const std_msgs::Int16& msg3); //motor 3
-void RearRightROS(const std_msgs::Int16& msg4); //motor 4
-void unlockPowerToMotors(const std_msgs::Int16& msg5); //GIGAVAC contactor
-
-int FrontRightMotor1speed;
-int FrontLeftMotor2speed;
-int RearLeftMotor3speed;
-int RearRightMotor4speed; 
-
-ros::Subscriber<std_msgs::Int16> FrontRightSpeed("/dcu1/motor1/cmd", FrontRightROS); //Front Right wheel, motor 1
-ros::Subscriber<std_msgs::Int16> FrontLeftSpeed("/dcu1/motor2/cmd", FrontLeftROS); //Front Left Wheel, motor 2
-ros::Subscriber<std_msgs::Int16> RearLeftSpeed("/dcu1/motor3/cmd", RearLeftROS); //Rear Left wheel, motor 3
-ros::Subscriber<std_msgs::Int16> RearRightSpeed("/dcu1/motor4/cmd", RearRightROS); //Rear Right Wheel, motor 4
-
-//contactor power
-int contactorEnabled;
-ros::Subscriber<std_msgs::Int16> PowerLock("/dcu1/contactor", unlockPowerToMotors);
-std_msgs::String powerLocker_msg;
-ros::Publisher motor_power("gigavac_feedback", &powerLocker_msg);
-
-//ROS Encoder Control:
-std_msgs::Int32 FrontRightEncMsg; //Front Right, motor 1 encoder message to ROS
-ros::Publisher FrontRightEncPublish("/dcu1/motor1/enc", &FrontRightEncMsg);
-
-std_msgs::Int32 FrontLeftEncMsg; //Front Left, motor 2 encoder message to ROS
-ros::Publisher FrontLeftEncPublish("/dcu1/motor2/enc", &FrontLeftEncMsg);
-
-std_msgs::Int32 RearLeftEncMsg; //Rear Left, motor 3 encoder message to ROS
-ros::Publisher RearLeftEncPublish("/dcu1/motor3/enc", &RearLeftEncMsg);
-
-std_msgs::Int32 RearRightEncMsg; //Rear Right, motor 4 encoder message to ROS
-ros::Publisher RearRightEncPublish("/dcu1/motor4/enc", &RearRightEncMsg);
-
 //MAIN FUNCTION ===============================================================================
 void setup()
 {
@@ -140,41 +93,39 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(ENCODERINTERRUPT), encoderHandler, FALLING); //configure interrupt
 
   //ROS PART --------------------------------------------------------------------------------------------------
-  WiFi.begin(ssid, password);
+  if (!IGNOREDEBUG) {
+    WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    while (WiFi.status() != WL_CONNECTED && !IGNOREDEBUG) {
+      delay(500);
+      Serial.print(".");
+    }
+
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+
+    // Set the connection to rosserial socket server
+    DCU1.getHardware()->setConnection(server, serverPort);
+    DCU1.initNode();
+
+    // Another way to get IP
+    Serial.print("IP = ");
+    Serial.println(DCU1.getHardware()->getLocalIP());
+
+    //motor subs -> read DCU power from ROS and apply to motors
+    DCU1.subscribe(FrontRightSpeed); //motor 1
+    DCU1.subscribe(FrontLeftSpeed); //motor 2
+    DCU1.subscribe(RearLeftSpeed); //motor 3
+    DCU1.subscribe(RearRightSpeed); //motor 4
+
+    //motor publishing -> read encoders on DCU side and publish them to ROS
+
+    //contactor ROS -> subscribe to unlock, publish to let PC know gigavac is engaged
+    DCU1.subscribe(PowerLock); //contactor subscriber
+    DCU1.advertise(motor_power); //contactor feedback publisher
   }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  // Set the connection to rosserial socket server
-  DCU1.getHardware()->setConnection(server, serverPort);
-  DCU1.initNode();
-
-  // Another way to get IP
-  Serial.print("IP = ");
-  Serial.println(DCU1.getHardware()->getLocalIP());
-
-  //motor subs -> read DCU power from ROS and apply to motors
-  DCU1.subscribe(FrontRightSpeed); //motor 1
-  DCU1.subscribe(FrontLeftSpeed); //motor 2
-  DCU1.subscribe(RearLeftSpeed); //motor 3
-  DCU1.subscribe(RearRightSpeed); //motor 4
-
-  //motor publishing -> read encoders on DCU side and publish them to ROS
-
-  //contactor ROS -> subscribe to unlock, publish to let PC know gigavac is engaged
-  DCU1.subscribe(PowerLock); //contactor subscriber
-  DCU1.advertise(motor_power); //contactor feedback publisher
-
-
-  //Start the ROS node on DCUx
-  DCU1.advertise(chatter);
 }
 
 // LOOP FUNCTION ====================================================================================
@@ -190,9 +141,6 @@ void loop()
 
   //run motors based on ROS -> single DCU 4ch operation
   moveMotorsBasedOnROS(); 
-
-  //run motors based on ROS -> dual DCU 4to2ch operation
-  //moveDualDCUmotorsBasedOnROS();
 
   // //TEST MOTOR
   // FrontRightMotor.go(&motorControl, 100);
@@ -239,6 +187,10 @@ void calculateEncoders(void * pvParameters) {
   }
 }
 
+/*
+  ROS FUNCTIONS BELOW -> DO NOT TOUCH UNLESS NOT WORKING
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Int16& msg1) { //motor 1 data from ROS to motor control
   FrontRightMotor1speed = msg1.data;
@@ -286,14 +238,14 @@ void moveMotorsBasedOnROS() {
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   //unlock power to motors based on ROS command
-  if(msg5.data == 0) { //turn off GIGAVAC
-    contactorEnabled = msg5.data;
+  int16_t contactorEnabled = msg5.data;
+
+  if(contactorEnabled == 0) { //turn off GIGAVAC
     digitalWrite(GIGAVACENABLE, HIGH); //HIGH turns it off
     powerLocker_msg.data = "POWER IS OFF";
   }
 
-  else if (msg5.data == 1) { //turn on GIGAVAC
-    contactorEnabled = msg5.data;
+  else if (contactorEnabled == 1) { //turn on GIGAVAC
     digitalWrite(GIGAVACENABLE, LOW); //LOW turns it on
     powerLocker_msg.data = "POWER IS ON";
   }
