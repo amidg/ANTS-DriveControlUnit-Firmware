@@ -7,68 +7,11 @@
 #include <Rotary.h>
 #include <RotaryEncOverMCP.h>
 #include "EncoderANTS.h"
-#include "ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Int16.h"
-#include "std_msgs/Int32.h"
+#include "ANTS_ROS.h"
+#include "ANTShardwareDescription.h"
 
 //MOTOR CONTROL
 Adafruit_MCP23017 motorControl;
-
-#define GIGAVACENABLE 14
-
-#define MOTOR1PWM 26
-#define MOTOR1IN1 0
-#define MOTOR1IN2 1
-
-#define MOTOR2PWM 27
-#define MOTOR2IN1 2
-#define MOTOR2IN2 3
-
-#define MOTOR3PWM 32
-#define MOTOR3IN1 4
-#define MOTOR3IN2 5
-
-#define MOTOR4PWM 33
-#define MOTOR4IN1 6
-#define MOTOR4IN2 7
-
-/*
-  MCP23017 L298P PIN DEFINITIONS:
-  GPA0 -> M1-IN1 (pins 1 and 4) ---> USE PIN ID 0
-  GPA1 -> M1-IN2 (pins 2 and 3)
-
-  GPA2 -> M2-IN1 (pins 1 and 4)
-  GPA3 -> M2-IN2 (pins 2 and 3)
-
-  GPA4 -> M3-IN1 (pins 1 and 4)
-  GPA5 -> M3-IN2 (pins 2 and 3)
-
-  GPA6 -> M4-IN1 (pins 1 and 4)
-  GPA7 -> M4-IN2 (pins 2 and 3) ----> USE PIN ID 7
-
-  addr 0 = A2 low , A1 low , A0 low  000 --> motor control MCP23017
-  addr 1 = A2 low , A1 low , A0 high 001
-  addr 2 = A2 low , A1 high , A0 low  010 --> encoder MCP23017
-  addr 3 = A2 low , A1 high , A0 high  011
-  addr 4 = A2 high , A1 low , A0 low  100
-  addr 5 = A2 high , A1 low , A0 high  101
-  addr 6 = A2 high , A1 high , A0 low  110
-  addr 7 = A2 high, A1 high, A0 high 111
-
-  MCP23017 ENCODER PIN DEFINITIONS:
-  GPA0 -> ENC1-A ---> USE PIN ID 0 --> MOTOR 1 (FRONT RIGHT)
-  GPA1 -> ENC1-B ---> USE PIN ID 1
-
-  GPA2 -> ENC2-A ---> USE PIN ID 2 --> MOTOR 2 (FRONT LEFT)
-  GPA3 -> ENC2-B ---> USE PIN ID 3
-
-  GPA4 -> ENC3-A ---> USE PIN ID 4 --> MOTOR 3 (REAR LEFT)
-  GPA5 -> ENC3-B ---> USE PIN ID 5
-
-  GPA6 -> ENC4-A ---> USE PIN ID 6 --> MOTOR 4 (REAR RIGHT)
-  GPA7 -> ENC4-B ---> USE PIN ID 7
-*/
 
 //assumed direction when motherboard ethernet side facing rear of the robot
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR1PWM); //FR, motor 1
@@ -81,7 +24,6 @@ void moveDualDCUmotorsBasedOnROS();
 
 //ENCODER CONTROL =============================================================================
 TaskHandle_t encoderCalculator;
-#define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 Adafruit_MCP23017 encoderControl;
 //void RotaryEncoderChanged(bool clockwise, int id); //callback function
 int encoderValue[4]; //all motor encoders
@@ -105,60 +47,13 @@ IPAddress ip(192, 168, 1, 3);
 IPAddress server(192,168,100,100);
 const uint16_t serverPort = 11411;
 
-
-//ROS DEFINITIONS =============================================================================
-ros::NodeHandle DCU1;
-// Make a chatter publisher
-std_msgs::String str_msg;
-ros::Publisher chatter("dcu_test", &str_msg);
-
-// Be polite and say hello
-char hello[13] = "DCU test";
-uint16_t period = 20;
-uint32_t last_time = 0;
-
-//ROS motor control
-void FrontRightROS(const std_msgs::Int16& msg1); //motor 1
-void FrontLeftROS(const std_msgs::Int16& msg2); //motor 2
-void RearLeftROS(const std_msgs::Int16& msg3); //motor 3
-void RearRightROS(const std_msgs::Int16& msg4); //motor 4
-void unlockPowerToMotors(const std_msgs::Int16& msg5); //GIGAVAC contactor
-
-int FrontRightMotor1speed;
-int FrontLeftMotor2speed;
-int RearLeftMotor3speed;
-int RearRightMotor4speed; 
-
-ros::Subscriber<std_msgs::Int16> FrontRightSpeed("/dcu1/motor1/cmd", FrontRightROS); //Front Right wheel, motor 1
-ros::Subscriber<std_msgs::Int16> FrontLeftSpeed("/dcu1/motor2/cmd", FrontLeftROS); //Front Left Wheel, motor 2
-ros::Subscriber<std_msgs::Int16> RearLeftSpeed("/dcu1/motor3/cmd", RearLeftROS); //Rear Left wheel, motor 3
-ros::Subscriber<std_msgs::Int16> RearRightSpeed("/dcu1/motor4/cmd", RearRightROS); //Rear Right Wheel, motor 4
-
-//contactor power
-ros::Subscriber<std_msgs::Int16> PowerLock("/dcu1/contactor", unlockPowerToMotors);
-std_msgs::String powerLocker_msg;
-ros::Publisher motor_power("gigavac_feedback", &powerLocker_msg);
-
-//ROS Encoder Control:
-std_msgs::Int32 FrontRightEncMsg; //Front Right, motor 1 encoder message to ROS
-ros::Publisher FrontRightEncPublish("/dcu1/motor1/enc", &FrontRightEncMsg);
-
-std_msgs::Int32 FrontLeftEncMsg; //Front Left, motor 2 encoder message to ROS
-ros::Publisher FrontLeftEncPublish("/dcu1/motor2/enc", &FrontLeftEncMsg);
-
-std_msgs::Int32 RearLeftEncMsg; //Rear Left, motor 3 encoder message to ROS
-ros::Publisher RearLeftEncPublish("/dcu1/motor3/enc", &RearLeftEncMsg);
-
-std_msgs::Int32 RearRightEncMsg; //Rear Right, motor 4 encoder message to ROS
-ros::Publisher RearRightEncPublish("/dcu1/motor4/enc", &RearRightEncMsg);
-
 //MAIN FUNCTION ===============================================================================
 void setup()
 {
   Serial.begin(9600);  
 
-  motorInterface.begin(21, 22, 100000);
-  encoderInterface.begin(21, 22, 100000);
+  motorInterface.begin(21, 22);
+  encoderInterface.begin(16, 17);
 
   //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
   motorControl.begin(0, &motorInterface); //specified custom address
@@ -171,7 +66,7 @@ void setup()
   pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
   //ENCODER CONTROL RUNS ON CORE 0 (ADDITIONAL)
-  encoderControl.begin(2, &encoderInterface); //specified custom address for encoders
+  encoderControl.begin(0, &encoderInterface); //specified custom address for encoders
   pinMode(ENCODERINTERRUPT, INPUT); //encoder interrupt pin
 
   FrontRightEncoder.begin(&encoderControl);
