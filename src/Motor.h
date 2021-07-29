@@ -17,19 +17,24 @@ IN1/3---IN2/4----PWM--------OUTPUT1/2
 
 #include "Arduino.h"
 #include "Adafruit_MCP23017.h"
-#include "EncoderANTS.h"
 
 class Motor
 {
     public:
     Motor(int control1, int control2, int pwmPin); //1 channel/motor
+    Motor(int control1, int control2, int control3, int control4, int pwmPin1, int pwmPin2); //2 ch/motor
     void begin(Adafruit_MCP23017 *control);
     void go(Adafruit_MCP23017 *control, int directionAndPower);
+    void go2ch(Adafruit_MCP23017 *control, int directionAndPower);
     void stop(Adafruit_MCP23017 *control);
+    void stop2ch(Adafruit_MCP23017 *control);
 
     int IN1;
     int IN2;
-    int PWM;
+    int PWM1;
+    int IN3;
+    int IN4;
+    int PWM2;
     int currentPWM;
 };
 
