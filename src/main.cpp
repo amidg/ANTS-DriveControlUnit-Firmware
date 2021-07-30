@@ -16,10 +16,10 @@
 Adafruit_MCP23017 motorControl;
 
 //assumed direction when motherboard ethernet side facing rear of the robot
-Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1IN2, MOTOR2IN1, MOTOR2IN2, MOTOR2PWM, MOTOR2PWM); //FR, motor 1 -> combines both 1st and 2nd motor channels
-//Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2IN2, MOTOR2PWM); //FL, MOTOR2 NOT EXECUTED IN DCU1 
-//Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3IN2, MOTOR3PWM); //RL, MOTOR3 NOT EXECTUTED IN DCU1
-Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4IN2, MOTOR3IN1, MOTOR3IN2, MOTOR4PWM, MOTOR3PWM); //RR, motor 4 -> combines both 4th and 3rd motor channels
+Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> use Motor constructor for polulu
+Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2PWM); //FL, motor2 -> polulu
+Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
+Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
 void moveMotorsBasedOnROS();
 void moveDualDCUmotorsBasedOnROS();
@@ -61,8 +61,8 @@ void setup()
   motorControl.begin(0, &motorInterface); //specified custom address
 
   FrontRightMotor.begin(&motorControl); //motor 1
-  //FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
-  //RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
+  FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
+  RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
   RearRightMotor.begin(&motorControl); //motor 4
 
   pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
@@ -143,10 +143,10 @@ void loop()
   //moveMotorsBasedOnROS(); 
 
   // //TEST MOTOR
-  FrontRightMotor.go(&motorControl, 100);
-  // Serial.println(FrontRightEncoder.readCurrentPosition());
-
-  RearRightMotor.go(&motorControl, 100);
+  FrontRightMotor.go(&motorControl, 255);
+  FrontLeftMotor.go(&motorControl, 255);
+  RearLeftMotor.go(&motorControl, 255);
+  RearRightMotor.go(&motorControl, 255);
 
   //DCU1.spinOnce();
   //delay(1);

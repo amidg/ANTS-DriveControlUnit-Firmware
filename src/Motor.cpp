@@ -35,6 +35,19 @@ Motor::Motor(int control1, int control2, int control3, int control4, int pwmPin1
   pinMode(PWM2, OUTPUT);
 }
 
+Motor::Motor(int control1, int pwmPin) {
+  //polulu g2 module
+  IN1 = control1;
+  IN2 = IN1;
+  IN3 = IN1;
+  IN4 = IN1;
+
+  PWM1 = pwmPin;
+  PWM2 = pwmPin;
+
+  pinMode(PWM1, OUTPUT);
+}
+
 void Motor::begin(Adafruit_MCP23017 *control) {
   //same function for both 2ch and 1ch operation. 
   //If single channel is used, this function will just work in dummy mode for IN3 and IN4
@@ -70,14 +83,14 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
     for (int i = currentPWM; i < power; i++) {
       analogWrite(PWM1, i);
       analogWrite(PWM2, i);
-      delay(50);
+      delay(10);
     }
     
   } else if (currentPWM > power) {
     for (int i = currentPWM; i > power; i--) {
       analogWrite(PWM1, i);
       analogWrite(PWM2, i);
-      delay(50);
+      delay(10);
     }
   }
 
