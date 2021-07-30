@@ -61,6 +61,14 @@ void Motor::begin(Adafruit_MCP23017 *control) {
   control->pullUp(IN4, 0);
 } 
 
+void Motor::begin() {
+  //direct ESP32 control
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+}
+
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   int power = abs(directionAndPower);
   
@@ -77,6 +85,42 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
     control->digitalWrite(IN2, HIGH);
     control->digitalWrite(IN3, LOW);
     control->digitalWrite(IN4, HIGH);
+  }
+
+  if (currentPWM <= power) {
+    for (int i = currentPWM; i < power; i++) {
+      analogWrite(PWM1, i);
+      analogWrite(PWM2, i);
+      delay(10);
+    }
+    
+  } else if (currentPWM > power) {
+    for (int i = currentPWM; i > power; i--) {
+      analogWrite(PWM1, i);
+      analogWrite(PWM2, i);
+      delay(10);
+    }
+  }
+
+  currentPWM = power; //set current PWM, needed for prevent soft start cycling
+}
+
+void Motor::go(int directionAndPower) {
+  int power = abs(directionAndPower);
+  
+  //controls side
+  if(directionAndPower >= 0) {
+    //if positive, go forward
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+  } else if (directionAndPower < 0) {
+    //if negative, go backwards
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
   }
 
   if (currentPWM <= power) {
