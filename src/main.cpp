@@ -60,10 +60,15 @@ void setup()
   //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
   motorControl.begin(0, &motorInterface); //specified custom address
 
-  FrontRightMotor.begin(&motorControl); //motor 1
-  FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
-  RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
-  RearRightMotor.begin(&motorControl); //motor 4
+  // FrontRightMotor.begin(&motorControl); //motor 1
+  // FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
+  // RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
+  // RearRightMotor.begin(&motorControl); //motor 4
+
+  FrontRightMotor.begin(); //motor 1
+  FrontLeftMotor.begin(); //motor 2 -> included in motor 1
+  RearLeftMotor.begin(); //motor 3 -> included in motor 4
+  RearRightMotor.begin(); //motor 4
 
   pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
@@ -116,8 +121,8 @@ void setup()
 
     //motor subs -> read DCU power from ROS and apply to motors
     DCU1.subscribe(FrontRightSpeed); //motor 1
-    //DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
-    //DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
+    DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
+    DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
     DCU1.subscribe(RearRightSpeed); //motor 4
 
     //motor publishing -> read encoders on DCU side and publish them to ROS
@@ -203,27 +208,35 @@ void moveMotorsBasedOnROS() {
   digitalWrite(GIGAVACENABLE, HIGH);
 
   if (FrontRightMotor1speed == 0) { // --> IGNORE IN DCU2
-    FrontRightMotor.stop(&motorControl);
+    //FrontRightMotor.stop(&motorControl);
+    FrontRightMotor.go(0);
   } else {
-    FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+    FrontRightMotor.go(FrontRightMotor1speed);
+    //FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
   }
 
-  // if (FrontLeftMotor2speed == 0) { // --> IGNORE IN DCU1
-  //   FrontLeftMotor.stop(&motorControl);
-  // } else {
-  //   FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
-  // }
+  if (FrontLeftMotor2speed == 0) { // --> IGNORE IN DCU1
+    //FrontLeftMotor.stop(&motorControl);
+    FrontLeftMotor.go(0);
+  } else {
+    FrontLeftMotor.go(FrontLeftMotor2speed);
+    //FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+  }
 
-  // if (RearLeftMotor3speed == 0) {
-  //   RearLeftMotor.stop(&motorControl);
-  // } else {
-  //   RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
-  // }
+  if (RearLeftMotor3speed == 0) {
+    //RearLeftMotor.stop(&motorControl);
+    RearLeftMotor.go(0);
+  } else {
+    RearLeftMotor.go(RearLeftMotor3speed);
+    //RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+  }
 
   if (RearRightMotor4speed == 0) { //--> IGNORE IN DCU2
-    RearRightMotor.stop(&motorControl);
+    //RearRightMotor.stop(&motorControl);
+    RearRightMotor.go(0);
   } else {
-    RearRightMotor.go(&motorControl, RearRightMotor4speed);
+    RearRightMotor.go(RearRightMotor4speed);
+    //RearRightMotor.go(&motorControl, RearRightMotor4speed);
   }
 }
 
