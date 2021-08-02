@@ -155,3 +155,18 @@ void Motor::stop(Adafruit_MCP23017 *control) {
 
   currentPWM = 0;
 }
+
+void Motor::stop() {
+  for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
+    analogWrite(PWM1, i);
+    analogWrite(PWM2, i);
+    delay(10);
+  }
+
+  digitalWrite(IN1, LOW); //fully turn off motors
+  digitalWrite(IN2, LOW); 
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+
+  currentPWM = 0;
+}

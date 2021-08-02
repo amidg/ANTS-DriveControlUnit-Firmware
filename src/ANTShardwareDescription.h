@@ -38,22 +38,34 @@
 #include "Arduino.h"
 
 #define GIGAVACENABLE 14
-
-#define MOTOR1PWM 26
-#define MOTOR1IN1 0
-#define MOTOR1IN2 1
-
-#define MOTOR2PWM 27
-#define MOTOR2IN1 2
-#define MOTOR2IN2 3
-
-#define MOTOR3PWM 32
-#define MOTOR3IN1 4
-#define MOTOR3IN2 5
-
-#define MOTOR4PWM 33
-#define MOTOR4IN1 6
-#define MOTOR4IN2 7
-
 #define ENCODERINTERRUPT 13 //interrupt pin from MCP23017 encoder circuit
 
+//MCP23017 CIRCUIT
+// #define MOTOR1PWM 26
+// #define MOTOR1IN1 0
+// #define MOTOR1IN2 1
+
+// #define MOTOR2PWM 27
+// #define MOTOR2IN1 2
+// #define MOTOR2IN2 3
+
+// #define MOTOR3PWM 32
+// #define MOTOR3IN1 4
+// #define MOTOR3IN2 5
+
+// #define MOTOR4PWM 33
+// #define MOTOR4IN1 6
+// #define MOTOR4IN2 7
+
+//DIRECT ESP32 CONTROL
+#define MOTOR1PWM 26
+#define MOTOR1IN1 18 //SCK
+
+#define MOTOR2PWM 27
+#define MOTOR2IN1 19 //MISO
+
+#define MOTOR3PWM 32
+#define MOTOR3IN1 23 //MOSI
+
+#define MOTOR4PWM 33
+#define MOTOR4IN1 25 //CS

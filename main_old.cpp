@@ -26,7 +26,6 @@ Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
 void moveMotorsBasedOnROS();
-void moveDualDCUmotorsBasedOnROS();
 
 //ENCODER CONTROL =============================================================================
 // TaskHandle_t encoderCalculator;

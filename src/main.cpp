@@ -18,9 +18,16 @@ Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2PWM); //FL, motor2 -> polulu
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
-// //hardware interfaice
-// TwoWire motorInterface = TwoWire(0);
-// TwoWire encoderInterface = TwoWire(1);
+void moveMotorsBasedOnROS();
+
+EncoderANTS FrontRightEncoder = EncoderANTS(0, 1);
+EncoderANTS FrontLeftEncoder = EncoderANTS(2, 3);
+EncoderANTS RearLeftEncoder = EncoderANTS(4, 5);
+EncoderANTS RearRightEncoder = EncoderANTS(6, 7);
+
+//hardware interfaice
+TwoWire motorInterface = TwoWire(0);
+TwoWire encoderInterface = TwoWire(1);
 
 //WI-FI DEFINITIONS: ============================================================================
 #define ESP32
@@ -60,17 +67,15 @@ void setup()
         Serial.println(DCU1.getHardware()->getLocalIP());
 
         //motor subs -> read DCU power from ROS and apply to motors
-        // DCU1.subscribe(FrontRightSpeed); //motor 1
-        // DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
-        // DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
-        // DCU1.subscribe(RearRightSpeed); //motor 4
+        DCU1.subscribe(FrontRightSpeed); //motor 1
+        DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
+        DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
+        DCU1.subscribe(RearRightSpeed); //motor 4
 
         // //motor publishing -> read encoders on DCU side and publish them to ROS
 
         // //contactor ROS -> subscribe to unlock, publish to let PC know gigavac is engaged
         DCU1.subscribe(PowerLock); //contactor subscriber
-        //DCU1.subscribe(ChatterSubTest);
-        // DCU1.advertise(motor_power); //contactor feedback publisher
     }
 
 
@@ -86,10 +91,10 @@ void setup()
     // RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
     // RearRightMotor.begin(&motorControl); //motor 4
 
-    // FrontRightMotor.beginNoMCP(); //motor 1
-    // FrontLeftMotor.beginNoMCP(); //motor 2 -> included in motor 1
-    // RearLeftMotor.beginNoMCP(); //motor 3 -> included in motor 4
-    // RearRightMotor.beginNoMCP(); //motor 4
+    FrontRightMotor.beginNoMCP(); //motor 1
+    FrontLeftMotor.beginNoMCP(); //motor 2 -> included in motor 1
+    RearLeftMotor.beginNoMCP(); //motor 3 -> included in motor 4
+    RearRightMotor.beginNoMCP(); //motor 4
 
 }
 
@@ -97,28 +102,18 @@ void setup()
 void loop()
 {
     //first of all check DCU connection to ROS -> do not start program if no ROS node
-    // while (!DCU1.connected() && !IGNOREDEBUG) {
-    //     Serial.println("ERROR: NO ROS CONNECTION");
-    // }
-
     if(millis() - last_time >= period)
     {
         last_time = millis();
         if (DCU1.connected()) {
             Serial.println("Connected");
-            // Say hello
-            // str_msg.data = hello;
-            // chatter.publish( &str_msg );
+            
+            //run motors based on ROS -> single DCU 4ch operation
+            moveMotorsBasedOnROS(); 
         } else {
             Serial.println("Not Connected");
         }
     }
-
-    //enable GIGAVAC
-    //motor_power.publish( &powerLocker_msg ); //power locker, str_msg.data is generated based on the input from the ROS power locker 
-
-    //run motors based on ROS -> single DCU 4ch operation
-    //moveMotorsBasedOnROS(); 
 
     DCU1.spinOnce();
     delay(1);
@@ -129,57 +124,61 @@ void loop()
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ADDITIONAL FUNCTIONS ================================================================================
-// void FrontRightROS(const std_msgs::Int16& msg1) { //motor 1 data from ROS to motor control
-//   FrontRightMotor1speed = msg1.data;
-// }
+void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
+    Serial.println(msg1.data);
+    FrontRightMotor1speed = (-1)*255*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+}
 
-// void FrontLeftROS(const std_msgs::Int16& msg2) { //motor 2 data from ROS to motor control
-//   FrontLeftMotor2speed = msg2.data;
-// }
-// void RearLeftROS(const std_msgs::Int16& msg3) { //motor 3 data from ROS to motor control
-//   RearLeftMotor3speed = msg3.data;
-// } 
+void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
+    Serial.println(msg2.data);
+    FrontLeftMotor2speed = (-1)*255*(msg2.data);
+}
+void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
+    Serial.println(msg3.data);
+    RearLeftMotor3speed = (-1)*255*(msg3.data);
+} 
 
-// void RearRightROS(const std_msgs::Int16& msg4) { //motor 4 data from ROS to motor control
-//   RearRightMotor4speed = msg4.data;
-// }
+void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
+    Serial.println(msg4.data);
+    RearRightMotor4speed = (-1)*255*(msg4.data);
+}
 
-// void moveMotorsBasedOnROS() {
-//   //make sure to stop motors if there is 0 velocity command from ROS
-//   digitalWrite(GIGAVACENABLE, HIGH);
+void moveMotorsBasedOnROS() {
+  //make sure to stop motors if there is 0 velocity command from ROS
+  //digitalWrite(GIGAVACENABLE, HIGH); //commented for safety
 
-//   if (FrontRightMotor1speed == 0) { // --> IGNORE IN DCU2
-//     //FrontRightMotor.stop(&motorControl);
-//     FrontRightMotor.go(0);
-//   } else {
-//     FrontRightMotor.go(FrontRightMotor1speed);
-//     //FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
-//   }
+  if (FrontRightMotor1speed == 0) { // --> IGNORE IN DCU2
+    //FrontRightMotor.stop(&motorControl);
+    FrontRightMotor.stop();
+  } else {
+    FrontRightMotor.go(FrontRightMotor1speed);
+    //FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+  }
 
-//   if (FrontLeftMotor2speed == 0) { // --> IGNORE IN DCU1
-//     //FrontLeftMotor.stop(&motorControl);
-//     FrontLeftMotor.go(0);
-//   } else {
-//     FrontLeftMotor.go(FrontLeftMotor2speed);
-//     //FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
-//   }
+  if (FrontLeftMotor2speed == 0) { // --> IGNORE IN DCU1
+    //FrontLeftMotor.stop(&motorControl);
+    FrontLeftMotor.stop();
+  } else {
+    FrontLeftMotor.go(FrontLeftMotor2speed);
+    //FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+  }
 
-//   if (RearLeftMotor3speed == 0) {
-//     //RearLeftMotor.stop(&motorControl);
-//     RearLeftMotor.go(0);
-//   } else {
-//     RearLeftMotor.go(RearLeftMotor3speed);
-//     //RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
-//   }
+  if (RearLeftMotor3speed == 0) {
+    //RearLeftMotor.stop(&motorControl);
+    RearLeftMotor.stop();
+  } else {
+    RearLeftMotor.go(RearLeftMotor3speed);
+    //RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+  }
 
-//   if (RearRightMotor4speed == 0) { //--> IGNORE IN DCU2
-//     //RearRightMotor.stop(&motorControl);
-//     RearRightMotor.go(0);
-//   } else {
-//     RearRightMotor.go(RearRightMotor4speed);
-//     //RearRightMotor.go(&motorControl, RearRightMotor4speed);
-//   }
-// }
+  if (RearRightMotor4speed == 0) { //--> IGNORE IN DCU2
+    //RearRightMotor.stop(&motorControl);
+    RearRightMotor.stop();
+  } else {
+    RearRightMotor.go(RearRightMotor4speed);
+    //RearRightMotor.go(&motorControl, RearRightMotor4speed);
+  }
+}
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   //unlock power to motors based on ROS command
