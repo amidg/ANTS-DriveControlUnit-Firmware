@@ -13,8 +13,12 @@
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
 #define MAXPOWER 0.25 //MAX POWER IN %/100
 
-//assumed direction when motherboard ethernet side facing rear of the robot
-Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> use Motor constructor for polulu
+// I/O expander constructors
+Adafruit_MCP23017 motorControl;
+Adafruit_MCP23017 encoderControl;
+
+//Motor constructor for the polulu -> direct control VS MCP23017 should be changed thru hardware description
+Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> polulu
 Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2PWM); //FL, motor2 -> polulu
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
@@ -76,27 +80,29 @@ void setup()
 
         // //motor publishing -> read encoders on DCU side and publish them to ROS
 
+
         // //contactor ROS -> subscribe to unlock, publish to let PC know gigavac is engaged
         DCU1.subscribe(PowerLock); //contactor subscriber
     }
 
 
     //start hardware interface for motor and encoders
-    //motorInterface.begin(21, 22);
-    //encoderInterface.begin(16,17);
+    motorInterface.begin(21, 22);
+    encoderInterface.begin(16,17);
 
     //MOTOR CONTROL RUNS ON CORE 1 (MAIN)
-    //motorControl.begin(0, &motorInterface); //specified custom address
+    motorControl.begin(0, &motorInterface); //specified custom address
 
-    // FrontRightMotor.begin(&motorControl); //motor 1
-    // FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
-    // RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
-    // RearRightMotor.begin(&motorControl); //motor 4
+    FrontRightMotor.begin(&motorControl); //motor 1
+    FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
+    RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
+    RearRightMotor.begin(&motorControl); //motor 4
 
-    FrontRightMotor.beginNoMCP(); //motor 1
-    FrontLeftMotor.beginNoMCP(); //motor 2 -> included in motor 1
-    RearLeftMotor.beginNoMCP(); //motor 3 -> included in motor 4
-    RearRightMotor.beginNoMCP(); //motor 4
+    //direct control
+    // FrontRightMotor.begin(); //motor 1
+    // FrontLeftMotor.begin(); //motor 2 -> included in motor 1
+    // RearLeftMotor.begin(); //motor 3 -> included in motor 4
+    // RearRightMotor.begin(); //motor 4
 
 }
 
@@ -152,35 +158,27 @@ void moveMotorsBasedOnROS() {
   //make sure to stop motors if there is 0 velocity command from ROS
 
   if (FrontRightMotor1speed == 0) { 
-    //FrontRightMotor.stop(&motorControl);
-    FrontRightMotor.stop();
+    FrontRightMotor.stop(&motorControl);
   } else {
-    FrontRightMotor.go(FrontRightMotor1speed);
-    //FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+    FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
   }
 
   if (FrontLeftMotor2speed == 0) {
-    //FrontLeftMotor.stop(&motorControl);
-    FrontLeftMotor.stop();
+    FrontLeftMotor.stop(&motorControl);
   } else {
-    FrontLeftMotor.go(FrontLeftMotor2speed);
-    //FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+    FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
   }
 
   if (RearLeftMotor3speed == 0) {
-    //RearLeftMotor.stop(&motorControl);
-    RearLeftMotor.stop();
+    RearLeftMotor.stop(&motorControl);
   } else {
-    RearLeftMotor.go(RearLeftMotor3speed);
-    //RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+    RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
   }
 
   if (RearRightMotor4speed == 0) { 
-    //RearRightMotor.stop(&motorControl);
-    RearRightMotor.stop();
+    RearRightMotor.stop(&motorControl);
   } else {
-    RearRightMotor.go(RearRightMotor4speed);
-    //RearRightMotor.go(&motorControl, RearRightMotor4speed);
+    RearRightMotor.go(&motorControl, RearRightMotor4speed);
   }
 }
 
@@ -189,11 +187,11 @@ void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   int16_t contactorEnabled = msg5.data;
 
   if(contactorEnabled == 0) { //turn off GIGAVAC
-    digitalWrite(GIGAVACENABLE, LOW); //HIGH turns it off
+    digitalWrite(GIGAVACENABLE, LOW); //LOW turns it off
   }
 
   else if (contactorEnabled == 1) { //turn on GIGAVAC
-    digitalWrite(GIGAVACENABLE, HIGH); //LOW turns it on
+    digitalWrite(GIGAVACENABLE, HIGH); //HIGH turns it on
   }
 }
 
@@ -202,25 +200,19 @@ void unlockPowerToMotors(const std_msgs::Int16& msg5) {
 // }
 
 void testMotorsSeparately() {
-    digitalWrite(GIGAVACENABLE, HIGH);
+  FrontRightMotor.go(&motorControl, 0.2*255);
+  delay(2000);
+  FrontRightMotor.stop(&motorControl);
 
-    //motor1
-    FrontRightMotor.go(0.2*255);
-    delay(2000);
-    FrontRightMotor.stop();
+  FrontLeftMotor.go(&motorControl, 0.2*255);
+  delay(2000);
+  FrontLeftMotor.stop(&motorControl);
 
-    //motor2
-    FrontLeftMotor.go(0.2*255);
-    delay(2000);
-    FrontLeftMotor.stop();
+  RearLeftMotor.go(&motorControl, 0.2*255);
+  delay(2000);
+  RearLeftMotor.stop(&motorControl);
 
-    //motor3
-    RearLeftMotor.go(0.2*255);
-    delay(2000);
-    RearLeftMotor.stop();
-
-    //motor4
-    RearRightMotor.go(0.2*255);
-    delay(2000);
-    RearRightMotor.stop();
+  RearRightMotor.go(&motorControl, 0.2*255);
+  delay(2000);
+  RearRightMotor.stop(&motorControl);
 }

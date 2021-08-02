@@ -22,10 +22,9 @@ class Motor
 {
     public:
     Motor(int control1, int control2, int pwmPin); //1 channel/motor
-    Motor(int control1, int control2, int control3, int control4, int pwmPin1, int pwmPin2); //2 ch/motor
     Motor(int control1, int pwmPin); //polulu g2 module
     void begin(Adafruit_MCP23017 *control);
-    void beginNoMCP(); //no MCP23017 control
+    void begin(); //no MCP23017 control
     void go(Adafruit_MCP23017 *control, int directionAndPower);
     void go(int directionAndPower);
     void stop(Adafruit_MCP23017 *control);
@@ -34,9 +33,6 @@ class Motor
     int IN1;
     int IN2;
     int PWM1;
-    int IN3;
-    int IN4;
-    int PWM2;
     int currentPWM;
 };
 
