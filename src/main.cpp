@@ -11,6 +11,7 @@
 #include "ANTShardwareDescription.h"
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
+#define MAXPOWER 50 //MAX POWER IN %
 
 //assumed direction when motherboard ethernet side facing rear of the robot
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> use Motor constructor for polulu
@@ -126,28 +127,28 @@ void loop()
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
     Serial.println(msg1.data);
-    FrontRightMotor1speed = (-1)*255*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+    FrontRightMotor1speed = (-1)*25*(MAXPOWER/100)*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
     Serial.println(msg2.data);
-    FrontLeftMotor2speed = (-1)*255*(msg2.data);
+    FrontLeftMotor2speed = (-1)*255*(MAXPOWER/100)*(msg2.data);
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
     Serial.println(msg3.data);
-    RearLeftMotor3speed = (-1)*255*(msg3.data);
+    RearLeftMotor3speed = (-1)*255*(MAXPOWER/100)*(msg3.data);
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
     Serial.println(msg4.data);
-    RearRightMotor4speed = (-1)*255*(msg4.data);
+    RearRightMotor4speed = (-1)*255*(MAXPOWER/100)*(msg4.data);
 }
 
 void moveMotorsBasedOnROS() {
   //make sure to stop motors if there is 0 velocity command from ROS
   //digitalWrite(GIGAVACENABLE, HIGH); //commented for safety
 
-  if (FrontRightMotor1speed == 0) { // --> IGNORE IN DCU2
+  if (FrontRightMotor1speed == 0) { 
     //FrontRightMotor.stop(&motorControl);
     FrontRightMotor.stop();
   } else {
@@ -155,7 +156,7 @@ void moveMotorsBasedOnROS() {
     //FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
   }
 
-  if (FrontLeftMotor2speed == 0) { // --> IGNORE IN DCU1
+  if (FrontLeftMotor2speed == 0) {
     //FrontLeftMotor.stop(&motorControl);
     FrontLeftMotor.stop();
   } else {
@@ -171,7 +172,7 @@ void moveMotorsBasedOnROS() {
     //RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
   }
 
-  if (RearRightMotor4speed == 0) { //--> IGNORE IN DCU2
+  if (RearRightMotor4speed == 0) { 
     //RearRightMotor.stop(&motorControl);
     RearRightMotor.stop();
   } else {

@@ -91,14 +91,12 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
     for (int i = currentPWM; i < power; i++) {
       analogWrite(PWM1, i);
       analogWrite(PWM2, i);
-      delay(10);
     }
     
   } else if (currentPWM > power) {
     for (int i = currentPWM; i > power; i--) {
       analogWrite(PWM1, i);
       analogWrite(PWM2, i);
-      delay(10);
     }
   }
 
@@ -127,14 +125,12 @@ void Motor::go(int directionAndPower) {
     for (int i = currentPWM; i < power; i++) {
       analogWrite(PWM1, i);
       analogWrite(PWM2, i);
-      delay(10);
     }
     
   } else if (currentPWM > power) {
     for (int i = currentPWM; i > power; i--) {
       analogWrite(PWM1, i);
       analogWrite(PWM2, i);
-      delay(10);
     }
   }
 
@@ -145,7 +141,6 @@ void Motor::stop(Adafruit_MCP23017 *control) {
   for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
     analogWrite(PWM1, i);
     analogWrite(PWM2, i);
-    delay(10);
   }
 
   control->digitalWrite(IN1, LOW); //fully turn off motors
@@ -160,7 +155,6 @@ void Motor::stop() {
   for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
     analogWrite(PWM1, i);
     analogWrite(PWM2, i);
-    delay(10);
   }
 
   digitalWrite(IN1, LOW); //fully turn off motors
