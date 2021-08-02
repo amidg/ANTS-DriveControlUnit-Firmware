@@ -43,7 +43,7 @@ Motor::Motor(int control1, int pwmPin) {
   IN4 = IN1;
 
   PWM1 = pwmPin;
-  PWM2 = pwmPin;
+  PWM2 = PWM1;
 
   pinMode(PWM1, OUTPUT);
 }
@@ -61,7 +61,7 @@ void Motor::begin(Adafruit_MCP23017 *control) {
   control->pullUp(IN4, 0);
 } 
 
-void Motor::begin() {
+void Motor::beginNoMCP() {
   //direct ESP32 control
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);

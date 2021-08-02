@@ -35,6 +35,8 @@
   GPA7 -> ENC4-B ---> USE PIN ID 7
 */
 
+#include "Arduino.h"
+
 #define GIGAVACENABLE 14
 
 #define MOTOR1PWM 26
