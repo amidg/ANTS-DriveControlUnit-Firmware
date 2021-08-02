@@ -110,6 +110,10 @@ void loop()
             Serial.println("Connected");
             
             //run motors based on ROS -> single DCU 4ch operation
+            Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
+            Serial.print("Motor 2 speed: "); Serial.println(FrontLeftMotor2speed);
+            Serial.print("Motor 3 speed: "); Serial.println(RearLeftMotor3speed);
+            Serial.print("Motor 4 speed: "); Serial.println(RearRightMotor4speed);
             moveMotorsBasedOnROS(); 
         } else {
             Serial.println("Not Connected");
@@ -127,26 +131,21 @@ void loop()
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
     FrontRightMotor1speed = (-1)*25*(MAXPOWER/100)*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
-    Serial.println(FrontRightMotor1speed);
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
     FrontLeftMotor2speed = (-1)*255*(MAXPOWER/100)*(msg2.data);
-    Serial.println(FrontLeftMotor2speed);
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
     RearLeftMotor3speed = (-1)*255*(MAXPOWER/100)*(msg3.data);
-    Serial.println(RearLeftMotor3speed);
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
     RearRightMotor4speed = (-1)*255*(MAXPOWER/100)*(msg4.data);
-    Serial.println(RearRightMotor4speed);
 }
 
 void moveMotorsBasedOnROS() {
   //make sure to stop motors if there is 0 velocity command from ROS
-  //digitalWrite(GIGAVACENABLE, HIGH); //commented for safety
 
   if (FrontRightMotor1speed == 0) { 
     //FrontRightMotor.stop(&motorControl);
