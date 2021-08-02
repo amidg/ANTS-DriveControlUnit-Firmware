@@ -11,7 +11,7 @@
 #include "ANTShardwareDescription.h"
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
-#define MAXPOWER 50 //MAX POWER IN %
+#define MAXPOWER 0.25 //MAX POWER IN %
 
 //assumed direction when motherboard ethernet side facing rear of the robot
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> use Motor constructor for polulu
@@ -20,6 +20,7 @@ Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
 void moveMotorsBasedOnROS();
+void testMotorsSeparately();
 
 EncoderANTS FrontRightEncoder = EncoderANTS(0, 1);
 EncoderANTS FrontLeftEncoder = EncoderANTS(2, 3);
@@ -120,6 +121,9 @@ void loop()
         }
     }
 
+    //DEBUG ONLY
+    //testMotorsSeparately();
+
     DCU1.spinOnce();
     delay(1);
 }
@@ -130,18 +134,18 @@ void loop()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
-    FrontRightMotor1speed = (-1)*25*(MAXPOWER/100)*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+    FrontRightMotor1speed = (-1)*25*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
-    FrontLeftMotor2speed = (-1)*255*(MAXPOWER/100)*(msg2.data);
+    FrontLeftMotor2speed = (-1)*255*MAXPOWER*(msg2.data);
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
-    RearLeftMotor3speed = (-1)*255*(MAXPOWER/100)*(msg3.data);
+    RearLeftMotor3speed = (-1)*255*MAXPOWER*(msg3.data);
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
-    RearRightMotor4speed = (-1)*255*(MAXPOWER/100)*(msg4.data);
+    RearRightMotor4speed = (-1)*255*MAXPOWER*(msg4.data);
 }
 
 void moveMotorsBasedOnROS() {
@@ -196,3 +200,27 @@ void unlockPowerToMotors(const std_msgs::Int16& msg5) {
 // void testTopicSub(const std_msgs::String& msg6) {
 //     Serial.println(msg6.data);
 // }
+
+void testMotorsSeparately() {
+    digitalWrite(GIGAVACENABLE, HIGH);
+
+    //motor1
+    FrontRightMotor.go(0.2*255);
+    delay(2000);
+    FrontRightMotor.stop();
+
+    //motor2
+    FrontLeftMotor.go(0.2*255);
+    delay(2000);
+    FrontLeftMotor.stop();
+
+    //motor3
+    RearLeftMotor.go(0.2*255);
+    delay(2000);
+    RearLeftMotor.stop();
+
+    //motor4
+    RearRightMotor.go(0.2*255);
+    delay(2000);
+    RearRightMotor.stop();
+}
