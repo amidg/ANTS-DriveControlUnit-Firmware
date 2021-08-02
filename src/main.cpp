@@ -11,7 +11,7 @@
 #include "ANTShardwareDescription.h"
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
-#define MAXPOWER 0.25 //MAX POWER IN %
+#define MAXPOWER 0.25 //MAX POWER IN %/100
 
 //assumed direction when motherboard ethernet side facing rear of the robot
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> use Motor constructor for polulu
@@ -134,7 +134,7 @@ void loop()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
-    FrontRightMotor1speed = (-1)*25*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+    FrontRightMotor1speed = (-1)*255*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
