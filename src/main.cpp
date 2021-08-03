@@ -14,6 +14,7 @@
 #endif
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
+#define USEBLUETOOTH 1 //must be 1 to use Blueooth for debugging
 #define MAXPOWER 0.25 //MAX POWER IN %/100
 
 BluetoothSerial SerialBT;
@@ -39,19 +40,10 @@ EncoderANTS RearRightEncoder = EncoderANTS(6, 7);
 TwoWire motorInterface = TwoWire(0);
 TwoWire encoderInterface = TwoWire(1);
 
-//WI-FI DEFINITIONS: ============================================================================
-// const char* ssid     = "autobot_F07B";
-// const char* password = "mse2021cap";
-// // IPAddress ip(192, 168, 1, 3);
-// IPAddress server(25,2,117,165);
-// const uint16_t serverPort = 11411;
-
 //MAIN FUNCTION ===============================================================================]
 void setup()
 {
-    //Serial.begin(9600);  
-    SerialBT.begin("ANTS_DCU");
-    //Serial.println("Connect to ANTS_DCU");
+    if (USEBLUETOOTH) { SerialBT.begin("ANTS_DCU"); };
 
     if (SerialBT.available()) {
       SerialBT.println("Connected");
@@ -94,26 +86,23 @@ void setup()
 // LOOP FUNCTION ====================================================================================
 void loop()
 {
-    if (IGNOREDEBUG) {
-      //put 1 for debug
-      testMotorsSeparately();
-    } else if (!IGNOREDEBUG) {
-      //first of all check DCU connection to ROS -> do not start program if no ROS node
-      if (DCU1.connected()) {
-        SerialBT.println("Connected");
-            
-        //run motors based on ROS -> single DCU 4ch operation
+  if (!IGNOREDEBUG) {
+    while(true) {
+      if (USEBLUETOOTH) { 
+        //publish bluetooth
+        SerialBT.print("ROS node status: "); SerialBT.println(DCU1.connected());
         SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
         SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
         SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
         SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
-      } else {
-        SerialBT.println("Not Connected");
       }
 
       DCU1.spinOnce();
+      delayMicroseconds(20);
     }
-    delay(1);
+  } else if (IGNOREDEBUG) {
+    testMotorsSeparately();
+  }
 }
 
 /*
