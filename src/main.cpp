@@ -13,7 +13,7 @@
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-//BluetoothSerial //SerialBT;
+BluetoothSerial SerialBT;
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
 #define MAXPOWER 0.25 //MAX POWER IN %/100
@@ -52,7 +52,7 @@ TwoWire encoderInterface = TwoWire(1);
 void setup()
 {
     Serial.begin(9600);  
-    //SerialBT.begin("DCU1");
+    SerialBT.begin("DCU1");
 
     pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
@@ -85,12 +85,6 @@ void setup()
     FrontLeftMotor.begin(&motorControl); //motor 2 -> included in motor 1
     RearLeftMotor.begin(&motorControl); //motor 3 -> included in motor 4
     RearRightMotor.begin(&motorControl); //motor 4
-
-    //direct control
-    // FrontRightMotor.begin(); //motor 1
-    // FrontLeftMotor.begin(); //motor 2 -> included in motor 1
-    // RearLeftMotor.begin(); //motor 3 -> included in motor 4
-    // RearRightMotor.begin(); //motor 4
 }
 
 // LOOP FUNCTION ====================================================================================
@@ -102,7 +96,7 @@ void loop()
         last_time = millis();
         if (DCU1.connected()) {
             Serial.println("Connected");
-            //SerialBT.println("Connected");
+            SerialBT.println("Connected");
             
             //run motors based on ROS -> single DCU 4ch operation
             Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
@@ -112,7 +106,7 @@ void loop()
             moveMotorsBasedOnROS(); 
         } else {
             Serial.println("Not Connected");
-            //SerialBT.println("Not Connected");
+            SerialBT.println("Not Connected");
         }
     } 
 
