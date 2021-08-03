@@ -4,16 +4,21 @@
 #include "Adafruit_MCP23017.h"
 #include "analogWrite.h"
 #include "Motor.h"
-#include <Rotary.h>
-#include <RotaryEncOverMCP.h>
 #include "EncoderANTS.h"
 #include "ANTS_ROS.h"
 #include "ANTShardwareDescription.h"
+#include "BluetoothSerial.h" //adds Bluetooth support to existing ESP32
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+//BluetoothSerial //SerialBT;
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
 #define MAXPOWER 0.25 //MAX POWER IN %/100
 
-// I/O expander constructors
+// I/O expander constructorsl;[]]]]]
 Adafruit_MCP23017 motorControl;
 Adafruit_MCP23017 encoderControl;
 
@@ -43,20 +48,24 @@ const char* password = "mse2021cap";
 IPAddress server(25,2,117,165);
 const uint16_t serverPort = 11411;
 
-//MAIN FUNCTION ===============================================================================
+//MAIN FUNCTION ===============================================================================]
 void setup()
 {
     Serial.begin(9600);  
+    //SerialBT.begin("DCU1");
 
     pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
     //start wi-fi and ROS node
     if (!IGNOREDEBUG) {
         WiFi.begin(ssid, password);
-
+        delay(1000);
+        //SerialBT.println("Connecting to WiFi");
+        
         while (WiFi.status() != WL_CONNECTED && !IGNOREDEBUG) {
-        delay(500);
-        Serial.print(".");
+          delay(500);
+          Serial.print(".");
+          //SerialBT.print(".");
         }
 
         Serial.println("");
@@ -64,12 +73,18 @@ void setup()
         Serial.println("IP address: ");
         Serial.println(WiFi.localIP());
 
+        //SerialBT.println("");
+        //SerialBT.println("WiFi connected");
+        //SerialBT.println("IP address: ");
+        //SerialBT.println(WiFi.localIP());
+
         // Set the connection to rosserial socket server
         DCU1.getHardware()->setConnection(server, serverPort);
         DCU1.initNode();
 
         // Another way to get IP
         Serial.print("IP = ");
+        //SerialBT.print("IP = ");
         Serial.println(DCU1.getHardware()->getLocalIP());
 
         //motor subs -> read DCU power from ROS and apply to motors
@@ -103,18 +118,18 @@ void setup()
     // FrontLeftMotor.begin(); //motor 2 -> included in motor 1
     // RearLeftMotor.begin(); //motor 3 -> included in motor 4
     // RearRightMotor.begin(); //motor 4
-
 }
 
 // LOOP FUNCTION ====================================================================================
 void loop()
 {
     //first of all check DCU connection to ROS -> do not start program if no ROS node
-    if(millis() - last_time >= period)
+    if(millis() - last_time >= period && !IGNOREDEBUG)
     {
         last_time = millis();
         if (DCU1.connected()) {
             Serial.println("Connected");
+            //SerialBT.println("Connected");
             
             //run motors based on ROS -> single DCU 4ch operation
             Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
@@ -124,8 +139,9 @@ void loop()
             moveMotorsBasedOnROS(); 
         } else {
             Serial.println("Not Connected");
+            //SerialBT.println("Not Connected");
         }
-    }
+    } 
 
     //DEBUG ONLY
     //testMotorsSeparately();
@@ -156,7 +172,6 @@ void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to mo
 
 void moveMotorsBasedOnROS() {
   //make sure to stop motors if there is 0 velocity command from ROS
-
   if (FrontRightMotor1speed == 0) { 
     FrontRightMotor.stop(&motorControl);
   } else {
