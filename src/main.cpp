@@ -13,12 +13,13 @@
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-BluetoothSerial SerialBT;
-
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
 #define MAXPOWER 0.25 //MAX POWER IN %/100
+#define ESP32
 
-// I/O expander constructorsl;[]]]]]
+BluetoothSerial SerialBT;
+
+// I/O expander constructorsl;
 Adafruit_MCP23017 motorControl;
 Adafruit_MCP23017 encoderControl;
 
@@ -41,7 +42,6 @@ TwoWire motorInterface = TwoWire(0);
 TwoWire encoderInterface = TwoWire(1);
 
 //WI-FI DEFINITIONS: ============================================================================
-// #define ESP32
 // const char* ssid     = "autobot_F07B";
 // const char* password = "mse2021cap";
 // // IPAddress ip(192, 168, 1, 3);
@@ -52,7 +52,12 @@ TwoWire encoderInterface = TwoWire(1);
 void setup()
 {
     Serial.begin(9600);  
-    SerialBT.begin("DCU1");
+    SerialBT.begin("ANTS_DCU");
+    Serial.println("Connect to ANTS_DCU");
+
+    if (SerialBT.available()) {
+      SerialBT.println("Connected");
+    }
 
     pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
 
@@ -109,12 +114,16 @@ void loop()
             Serial.println("Not Connected");
             SerialBT.println("Not Connected");
         }
-    } 
+    } else {
+      //SerialBT.println("Ready to move");
+    }
 
     //DEBUG ONLY
     //testMotorsSeparately();
 
-    DCU1.spinOnce();
+    if (!IGNOREDEBUG) {
+      DCU1.spinOnce();
+    }
     delay(1);
 }
 

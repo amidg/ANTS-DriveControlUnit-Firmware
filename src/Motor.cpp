@@ -36,12 +36,6 @@ void Motor::begin(Adafruit_MCP23017 *control) {
   control->pullUp(IN2, 0);
 } 
 
-void Motor::begin() {
-  //direct ESP32 control
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-}
-
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   int power = abs(directionAndPower);
   
