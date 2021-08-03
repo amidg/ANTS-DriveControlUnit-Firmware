@@ -14,7 +14,7 @@
 #endif
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
-#define USEBLUETOOTH 1 //must be 1 to use Blueooth for debugging
+#define USEBLUETOOTH 0 //must be 1 to use Blueooth for debugging
 #define MAXPOWER 0.25 //MAX POWER IN %/100
 
 BluetoothSerial SerialBT;
@@ -53,20 +53,20 @@ void setup()
 
     //start wi-fi and ROS node
     if (!IGNOREDEBUG) {
-        DCU1.initNode();
-        SerialBT.println("Initializing ROS topics");
+      DCU1.initNode();
+      SerialBT.println("Initializing ROS topics");
 
-        //motor subs -> read DCU power from ROS and apply to motors
-        DCU1.subscribe(FrontRightSpeed); //motor 1
-        DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
-        DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
-        DCU1.subscribe(RearRightSpeed); //motor 4
+      //motor subs -> read DCU power from ROS and apply to motors
+      DCU1.subscribe(FrontRightSpeed); //motor 1
+      DCU1.subscribe(FrontLeftSpeed); //motor 2 -> included in motor 1
+      DCU1.subscribe(RearLeftSpeed); //motor 3 -> included in motor 4
+      DCU1.subscribe(RearRightSpeed); //motor 4
 
-        // //motor publishing -> read encoders on DCU side and publish them to ROS
+      //motor publishing -> read encoders on DCU side and publish them to ROS
 
 
-        // //contactor ROS -> subscribe to unlock, publish to let PC know gigavac is engaged
-        DCU1.subscribe(PowerLock); //contactor subscriber
+      //contactor ROS -> subscribe to unlock, publish to let PC know gigavac is engaged
+      DCU1.subscribe(PowerLock); //contactor subscriber
     }
 
 
