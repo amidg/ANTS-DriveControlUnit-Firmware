@@ -25,9 +25,7 @@ class Motor
     Motor(int control1, int pwmPin); //polulu g2 module
     void begin(Adafruit_MCP23017 *control);
     void go(Adafruit_MCP23017 *control, int directionAndPower);
-    void go(int directionAndPower);
     void stop(Adafruit_MCP23017 *control);
-    void stop();
 
     int IN1;
     int IN2;

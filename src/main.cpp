@@ -31,6 +31,14 @@ Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2PWM); //FL, motor2 -> polulu
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
+float Motor1DataFromROS;
+float Motor2DataFromROS;
+float Motor3DataFromROS;
+float Motor4DataFromROS;
+int16_t contactorEnabled;
+
+long TimeSinceStart;
+
 void testMotorsSeparately();
 
 EncoderANTS FrontRightEncoder = EncoderANTS(0, 1);
@@ -115,27 +123,31 @@ void loop()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
-  FrontRightMotor1speed = (-1)*255*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+  Motor1DataFromROS = msg1.data;
+  FrontRightMotor1speed = (-1)*255*MAXPOWER*(Motor1DataFromROS); //-1 is required because of FET polarity VS BJS polarity
   FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
-  FrontLeftMotor2speed = (-1)*255*MAXPOWER*(msg2.data);
+  Motor2DataFromROS = msg2.data;
+  FrontLeftMotor2speed = (-1)*255*MAXPOWER*(Motor2DataFromROS);
   FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
-  RearLeftMotor3speed = (-1)*255*MAXPOWER*(msg3.data);
+  Motor3DataFromROS = msg3.data;
+  RearLeftMotor3speed = (-1)*255*MAXPOWER*(Motor3DataFromROS);
   RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
-  RearRightMotor4speed = (-1)*255*MAXPOWER*(msg4.data);
+  Motor4DataFromROS = msg4.data;
+  RearRightMotor4speed = (-1)*255*MAXPOWER*(Motor4DataFromROS);
   RearRightMotor.go(&motorControl, RearRightMotor4speed);
 }
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   //unlock power to motors based on ROS command
-  int16_t contactorEnabled = msg5.data;
+  contactorEnabled = msg5.data;
 
   if(contactorEnabled == 0) { //turn off GIGAVAC
     digitalWrite(GIGAVACENABLE, LOW); //LOW turns it off
@@ -151,10 +163,12 @@ void BluetoothROS(void * parameter) {
     if (USEBLUETOOTH) { 
       //publish bluetooth
       SerialBT.print("ROS node status: "); SerialBT.println(DCU1.connected());
-      SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
-      SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
-      SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
-      SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
+      SerialBT.print("Contactor Status: "); SerialBT.println(contactorEnabled);
+      SerialBT.print("Motor 1 speed ROS/PWM: "); SerialBT.print(Motor1DataFromROS); SerialBT.print("/"); SerialBT.println(FrontRightMotor1speed);
+      SerialBT.print("Motor 2 speed ROS/PWM: "); SerialBT.print(Motor2DataFromROS); SerialBT.print("/"); SerialBT.println(FrontLeftMotor2speed);
+      SerialBT.print("Motor 3 speed ROS/PWM: "); SerialBT.print(Motor3DataFromROS); SerialBT.print("/"); SerialBT.println(RearLeftMotor3speed);
+      SerialBT.print("Motor 4 speed ROS/PWM: "); SerialBT.print(Motor4DataFromROS); SerialBT.print("/"); SerialBT.println(RearRightMotor4speed);
+      SerialBT.println("------------------------------------");
       vTaskDelay(10);
     }
 

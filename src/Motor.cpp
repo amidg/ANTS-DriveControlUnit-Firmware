@@ -38,54 +38,20 @@ void Motor::begin(Adafruit_MCP23017 *control) {
 
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   int power = abs(directionAndPower);
-  if (directionAndPower >= -10 && directionAndPower <= 10) { power = 0; };
+  if (directionAndPower >= -5 && directionAndPower <= 5) { power = 0; };
   
   //controls side
   if(directionAndPower > 0) {
     //if positive, go forward
     control->digitalWrite(IN1, HIGH);
-    control->digitalWrite(IN2, LOW);
+    // control->digitalWrite(IN2, LOW); //commented for FET driver
   } else if (directionAndPower < 0) {
     //if negative, go backwards
     control->digitalWrite(IN1, LOW);
-    control->digitalWrite(IN2, HIGH);
+    // control->digitalWrite(IN2, HIGH); //commented for FET driver
   } else if (directionAndPower == 0) {
     control->digitalWrite(IN1, LOW);
-    control->digitalWrite(IN2, LOW);
-    currentPWM = 0;
-    analogWrite(PWM1, currentPWM);
-  }
-
-  if (currentPWM <= power) {
-    for (int i = currentPWM; i < power; i++) {
-      analogWrite(PWM1, i);
-    }
-    
-  } else if (currentPWM > power) {
-    for (int i = currentPWM; i > power; i--) {
-      analogWrite(PWM1, i);
-    }
-  }
-
-  currentPWM = power; //set current PWM, needed for prevent soft start cycling
-}
-
-void Motor::go(int directionAndPower) {
-  int power = abs(directionAndPower);
-  if (directionAndPower >= -10 && directionAndPower <= 10) { power = 0; };
-  
-  //controls side
-  if(directionAndPower > 0) {
-    //if positive, go forward
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-  } else if (directionAndPower < 0) {
-    //if negative, go backwards
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-  } else if (directionAndPower == 0) {
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
+    // control->digitalWrite(IN2, LOW); //commented for FET driver
     currentPWM = 0;
     analogWrite(PWM1, currentPWM);
   }
@@ -111,18 +77,6 @@ void Motor::stop(Adafruit_MCP23017 *control) {
 
   control->digitalWrite(IN1, LOW); //fully turn off motors
   control->digitalWrite(IN2, LOW);
-
-  currentPWM = 0;
-}
-
-void Motor::stop() {
-  //direct ESP32 control stop
-  for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
-    analogWrite(PWM1, i);
-  }
-
-  digitalWrite(IN1, LOW); //fully turn off motors
-  digitalWrite(IN2, LOW); 
 
   currentPWM = 0;
 }
