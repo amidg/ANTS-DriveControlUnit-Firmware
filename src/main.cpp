@@ -51,9 +51,9 @@ TwoWire encoderInterface = TwoWire(1);
 //MAIN FUNCTION ===============================================================================]
 void setup()
 {
-    Serial.begin(9600);  
+    //Serial.begin(9600);  
     SerialBT.begin("ANTS_DCU");
-    Serial.println("Connect to ANTS_DCU");
+    //Serial.println("Connect to ANTS_DCU");
 
     if (SerialBT.available()) {
       SerialBT.println("Connected");
@@ -101,8 +101,8 @@ void loop()
     {
         last_time = millis();
         if (DCU1.connected()) {
-            Serial.println("Connected");
-            //SerialBT.println("Connected");
+            //Serial.println("Connected");
+            SerialBT.println("Connected");
             
             //run motors based on ROS -> single DCU 4ch operation
             // Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
@@ -116,7 +116,7 @@ void loop()
             SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
             moveMotorsBasedOnROS(); 
         } else {
-            Serial.println("Not Connected");
+            //Serial.println("Not Connected");
             SerialBT.println("Not Connected");
         }
     } else {
