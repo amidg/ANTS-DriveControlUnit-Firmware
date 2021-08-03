@@ -122,38 +122,22 @@ void loop()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
-    FrontRightMotor1speed = (-1)*255*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
-    if (FrontRightMotor1speed == 0) { 
-      FrontRightMotor.stop(&motorControl);
-    } else {
-      FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
-    }
+  FrontRightMotor1speed = (-1)*255*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+  FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
-    FrontLeftMotor2speed = (-1)*255*MAXPOWER*(msg2.data);
-    if (FrontLeftMotor2speed == 0) {
-      FrontLeftMotor.stop(&motorControl);
-    } else {
-      FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
-    }
+  FrontLeftMotor2speed = (-1)*255*MAXPOWER*(msg2.data);
+  FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
-    RearLeftMotor3speed = (-1)*255*MAXPOWER*(msg3.data);
-    if (RearLeftMotor3speed == 0) {
-      RearLeftMotor.stop(&motorControl);
-    } else {
-      RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
-    }
+  RearLeftMotor3speed = (-1)*255*MAXPOWER*(msg3.data);
+  RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
-    RearRightMotor4speed = (-1)*255*MAXPOWER*(msg4.data);
-    if (RearRightMotor4speed == 0) { 
-      RearRightMotor.stop(&motorControl);
-    } else {
-      RearRightMotor.go(&motorControl, RearRightMotor4speed);
-    }
+  RearRightMotor4speed = (-1)*255*MAXPOWER*(msg4.data);
+  RearRightMotor.go(&motorControl, RearRightMotor4speed);
 }
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
