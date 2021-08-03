@@ -18,6 +18,8 @@
 #define MAXPOWER 0.25 //MAX POWER IN %/100
 
 BluetoothSerial SerialBT;
+TaskHandle_t BluetoothDataTransfer;
+void BluetoothROS(void * parameter);
 
 // I/O expander constructorsl;
 Adafruit_MCP23017 motorControl;
@@ -43,7 +45,18 @@ TwoWire encoderInterface = TwoWire(1);
 //MAIN FUNCTION ===============================================================================]
 void setup()
 {
-    if (USEBLUETOOTH) { SerialBT.begin("ANTS_DCU"); };
+    if (USEBLUETOOTH) { 
+      SerialBT.begin("ANTS_DCU"); 
+
+      xTaskCreatePinnedToCore(
+        BluetoothROS,              /* Function to implement the task */
+        "Transfer ROS data over Bluetooth", /* Name of the task */
+        10000,                              /* Stack size in words */
+        NULL,                               /* Task input parameter */
+        0,                                  /* Priority of the task */
+        &BluetoothDataTransfer,                             /* Task handle. */
+        0);                                 /* Core where the task should run */
+    }
 
     if (SerialBT.available()) {
       SerialBT.println("Connected");
@@ -88,15 +101,6 @@ void loop()
 {
   if (!IGNOREDEBUG) {
     while(true) {
-      if (USEBLUETOOTH) { 
-        //publish bluetooth
-        SerialBT.print("ROS node status: "); SerialBT.println(DCU1.connected());
-        SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
-        SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
-        SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
-        SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
-      }
-
       DCU1.spinOnce();
       delayMicroseconds(20);
     }
@@ -139,6 +143,20 @@ void unlockPowerToMotors(const std_msgs::Int16& msg5) {
 
   else if (contactorEnabled == 1) { //turn on GIGAVAC
     digitalWrite(GIGAVACENABLE, HIGH); //HIGH turns it on
+  }
+}
+
+void BluetoothROS(void * parameter) {
+  while(1) {
+    if (USEBLUETOOTH) { 
+      //publish bluetooth
+      SerialBT.print("ROS node status: "); SerialBT.println(DCU1.connected());
+      SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
+      SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
+      SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
+      SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
+    }
+    vTaskDelay(10);
   }
 }
 
