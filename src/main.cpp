@@ -102,13 +102,18 @@ void loop()
         last_time = millis();
         if (DCU1.connected()) {
             Serial.println("Connected");
-            SerialBT.println("Connected");
+            //SerialBT.println("Connected");
             
             //run motors based on ROS -> single DCU 4ch operation
-            Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
-            Serial.print("Motor 2 speed: "); Serial.println(FrontLeftMotor2speed);
-            Serial.print("Motor 3 speed: "); Serial.println(RearLeftMotor3speed);
-            Serial.print("Motor 4 speed: "); Serial.println(RearRightMotor4speed);
+            // Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
+            // Serial.print("Motor 2 speed: "); Serial.println(FrontLeftMotor2speed);
+            // Serial.print("Motor 3 speed: "); Serial.println(RearLeftMotor3speed);
+            // Serial.print("Motor 4 speed: "); Serial.println(RearRightMotor4speed);
+
+            SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
+            SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
+            SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
+            SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
             moveMotorsBasedOnROS(); 
         } else {
             Serial.println("Not Connected");
