@@ -155,8 +155,10 @@ void BluetoothROS(void * parameter) {
       SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
       SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
       SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
+      vTaskDelay(10);
     }
-    vTaskDelay(10);
+
+    
   }
 }
 
