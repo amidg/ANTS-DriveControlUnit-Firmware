@@ -95,12 +95,11 @@ void setup()
 // LOOP FUNCTION ====================================================================================
 void loop()
 {
-    //first of all check DCU connection to ROS -> do not start program if no ROS node
-
-    //DEBUG ONLY
     if (IGNOREDEBUG) {
+      //put 1 for debug
       testMotorsSeparately();
     } else if (!IGNOREDEBUG) {
+      //first of all check DCU connection to ROS -> do not start program if no ROS node
       if (DCU1.connected()) {
         SerialBT.println("Connected");
             
