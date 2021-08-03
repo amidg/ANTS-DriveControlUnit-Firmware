@@ -169,10 +169,6 @@ void unlockPowerToMotors(const std_msgs::Int16& msg5) {
   }
 }
 
-// void testTopicSub(const std_msgs::String& msg6) {
-//     Serial.println(msg6.data);
-// }
-
 void testMotorsSeparately() {
   FrontRightMotor.go(&motorControl, 0.2*255);
   delay(2000);

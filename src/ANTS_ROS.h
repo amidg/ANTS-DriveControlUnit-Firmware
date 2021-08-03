@@ -9,18 +9,6 @@
 //ROS DEFINITIONS =============================================================================
 ros::NodeHandle DCU1;
 
-// Make a default chatter publisher and subscriber
-std_msgs::String str_msg;
-// ros::Publisher chatter("chatter", &str_msg);
-
-// void testTopicSub(const std_msgs::String& msg6);
-// ros::Subscriber<std_msgs::String> ChatterSubTest("/dcu1/contactor", testTopicSub);
-
-// Be polite and say hello
-char hello[13] = "DCU1 IS HERE";
-uint16_t period = 20;
-uint32_t last_time = 0;
-
 // //ROS motor control
 void FrontRightROS(const std_msgs::Float32& msg1); //motor 1
 void FrontLeftROS(const std_msgs::Float32& msg2); //motor 2
