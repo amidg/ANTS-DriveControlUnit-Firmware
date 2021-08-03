@@ -41,12 +41,12 @@ TwoWire motorInterface = TwoWire(0);
 TwoWire encoderInterface = TwoWire(1);
 
 //WI-FI DEFINITIONS: ============================================================================
-#define ESP32
-const char* ssid     = "autobot_F07B";
-const char* password = "mse2021cap";
-// IPAddress ip(192, 168, 1, 3);
-IPAddress server(25,2,117,165);
-const uint16_t serverPort = 11411;
+// #define ESP32
+// const char* ssid     = "autobot_F07B";
+// const char* password = "mse2021cap";
+// // IPAddress ip(192, 168, 1, 3);
+// IPAddress server(25,2,117,165);
+// const uint16_t serverPort = 11411;
 
 //MAIN FUNCTION ===============================================================================]
 void setup()
@@ -58,34 +58,7 @@ void setup()
 
     //start wi-fi and ROS node
     if (!IGNOREDEBUG) {
-        WiFi.begin(ssid, password);
-        delay(1000);
-        //SerialBT.println("Connecting to WiFi");
-        
-        while (WiFi.status() != WL_CONNECTED && !IGNOREDEBUG) {
-          delay(500);
-          Serial.print(".");
-          //SerialBT.print(".");
-        }
-
-        Serial.println("");
-        Serial.println("WiFi connected");
-        Serial.println("IP address: ");
-        Serial.println(WiFi.localIP());
-
-        //SerialBT.println("");
-        //SerialBT.println("WiFi connected");
-        //SerialBT.println("IP address: ");
-        //SerialBT.println(WiFi.localIP());
-
-        // Set the connection to rosserial socket server
-        DCU1.getHardware()->setConnection(server, serverPort);
         DCU1.initNode();
-
-        // Another way to get IP
-        Serial.print("IP = ");
-        //SerialBT.print("IP = ");
-        Serial.println(DCU1.getHardware()->getLocalIP());
 
         //motor subs -> read DCU power from ROS and apply to motors
         DCU1.subscribe(FrontRightSpeed); //motor 1
