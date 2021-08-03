@@ -56,10 +56,10 @@ void setup()
         0,                                  /* Priority of the task */
         &BluetoothDataTransfer,                             /* Task handle. */
         0);                                 /* Core where the task should run */
-    }
 
-    if (SerialBT.available()) {
-      SerialBT.println("Connected");
+      if (SerialBT.available()) {
+        SerialBT.println("Connected");
+      }
     }
 
     pinMode(GIGAVACENABLE, OUTPUT); //gigavac control relay
