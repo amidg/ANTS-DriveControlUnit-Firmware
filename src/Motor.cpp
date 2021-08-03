@@ -38,7 +38,7 @@ void Motor::begin(Adafruit_MCP23017 *control) {
 
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   int power = abs(directionAndPower);
-  if (power >= -10 && power <= 10) { power = 0; };
+  if (directionAndPower >= -10 && directionAndPower <= 10) { power = 0; };
   
   //controls side
   if(directionAndPower > 0) {
@@ -52,6 +52,8 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   } else if (directionAndPower == 0) {
     control->digitalWrite(IN1, LOW);
     control->digitalWrite(IN2, LOW);
+    currentPWM = 0;
+    analogWrite(PWM1, currentPWM);
   }
 
   if (currentPWM <= power) {
@@ -70,7 +72,7 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
 
 void Motor::go(int directionAndPower) {
   int power = abs(directionAndPower);
-  if (power >= -10 && power <= 10) { power = 0; };
+  if (directionAndPower >= -10 && directionAndPower <= 10) { power = 0; };
   
   //controls side
   if(directionAndPower > 0) {
@@ -84,6 +86,8 @@ void Motor::go(int directionAndPower) {
   } else if (directionAndPower == 0) {
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, LOW);
+    currentPWM = 0;
+    analogWrite(PWM1, currentPWM);
   }
 
   if (currentPWM <= power) {

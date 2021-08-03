@@ -15,7 +15,7 @@
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
 #define USEBLUETOOTH 1 //must be 1 to use Blueooth for debugging
-#define MAXPOWER 0.25 //MAX POWER IN %/100
+#define MAXPOWER 0.2 //MAX POWER IN %/100
 
 BluetoothSerial SerialBT;
 TaskHandle_t BluetoothDataTransfer;
