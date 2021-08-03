@@ -59,6 +59,7 @@ void setup()
     //start wi-fi and ROS node
     if (!IGNOREDEBUG) {
         DCU1.initNode();
+        SerialBT.println("Initializing ROS topics");
 
         //motor subs -> read DCU power from ROS and apply to motors
         DCU1.subscribe(FrontRightSpeed); //motor 1
