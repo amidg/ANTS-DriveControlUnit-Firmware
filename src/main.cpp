@@ -158,6 +158,8 @@ void BluetoothROS(void * parameter) {
       vTaskDelay(10);
     }
 
+    //place encoder stuff here
+    
     
   }
 }
