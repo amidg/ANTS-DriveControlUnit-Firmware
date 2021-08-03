@@ -15,7 +15,6 @@
 
 #define IGNOREDEBUG 0 //must be set to 0 to enable fully working
 #define MAXPOWER 0.25 //MAX POWER IN %/100
-#define ESP32
 
 BluetoothSerial SerialBT;
 
@@ -97,36 +96,24 @@ void setup()
 void loop()
 {
     //first of all check DCU connection to ROS -> do not start program if no ROS node
-    if(millis() - last_time >= period && !IGNOREDEBUG)
-    {
-        last_time = millis();
-        if (DCU1.connected()) {
-            //Serial.println("Connected");
-            SerialBT.println("Connected");
-            
-            //run motors based on ROS -> single DCU 4ch operation
-            // Serial.print("Motor 1 speed: "); Serial.println(FrontRightMotor1speed);
-            // Serial.print("Motor 2 speed: "); Serial.println(FrontLeftMotor2speed);
-            // Serial.print("Motor 3 speed: "); Serial.println(RearLeftMotor3speed);
-            // Serial.print("Motor 4 speed: "); Serial.println(RearRightMotor4speed);
-
-            SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
-            SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
-            SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
-            SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
-            moveMotorsBasedOnROS(); 
-        } else {
-            //Serial.println("Not Connected");
-            SerialBT.println("Not Connected");
-        }
-    } else {
-      //SerialBT.println("Ready to move");
-    }
 
     //DEBUG ONLY
-    //testMotorsSeparately();
+    if (IGNOREDEBUG) {
+      testMotorsSeparately();
+    } else if (!IGNOREDEBUG) {
+      if (DCU1.connected()) {
+        SerialBT.println("Connected");
+            
+        //run motors based on ROS -> single DCU 4ch operation
+        SerialBT.print("Motor 1 speed: "); SerialBT.println(FrontRightMotor1speed);
+        SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
+        SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
+        SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
+        moveMotorsBasedOnROS(); 
+      } else {
+        SerialBT.println("Not Connected");
+      }
 
-    if (!IGNOREDEBUG) {
       DCU1.spinOnce();
     }
     delay(1);

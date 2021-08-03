@@ -4,6 +4,7 @@
 #include "std_msgs/Int16.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
+#define ESP32
 
 //ROS DEFINITIONS =============================================================================
 ros::NodeHandle DCU1;
