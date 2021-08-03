@@ -28,7 +28,6 @@ Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2PWM); //FL, motor2 -> polulu
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
-void moveMotorsBasedOnROS();
 void testMotorsSeparately();
 
 EncoderANTS FrontRightEncoder = EncoderANTS(0, 1);
@@ -108,7 +107,6 @@ void loop()
         SerialBT.print("Motor 2 speed: "); SerialBT.println(FrontLeftMotor2speed);
         SerialBT.print("Motor 3 speed: "); SerialBT.println(RearLeftMotor3speed);
         SerialBT.print("Motor 4 speed: "); SerialBT.println(RearRightMotor4speed);
-        moveMotorsBasedOnROS(); 
       } else {
         SerialBT.println("Not Connected");
       }
@@ -125,44 +123,37 @@ void loop()
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
     FrontRightMotor1speed = (-1)*255*MAXPOWER*(msg1.data); //-1 is required because of FET polarity VS BJS polarity
+    if (FrontRightMotor1speed == 0) { 
+      FrontRightMotor.stop(&motorControl);
+    } else {
+      FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+    }
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
     FrontLeftMotor2speed = (-1)*255*MAXPOWER*(msg2.data);
+    if (FrontLeftMotor2speed == 0) {
+      FrontLeftMotor.stop(&motorControl);
+    } else {
+      FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+    }
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
     RearLeftMotor3speed = (-1)*255*MAXPOWER*(msg3.data);
+    if (RearLeftMotor3speed == 0) {
+      RearLeftMotor.stop(&motorControl);
+    } else {
+      RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+    }
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
     RearRightMotor4speed = (-1)*255*MAXPOWER*(msg4.data);
-}
-
-void moveMotorsBasedOnROS() {
-  //make sure to stop motors if there is 0 velocity command from ROS
-  if (FrontRightMotor1speed == 0) { 
-    FrontRightMotor.stop(&motorControl);
-  } else {
-    FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
-  }
-
-  if (FrontLeftMotor2speed == 0) {
-    FrontLeftMotor.stop(&motorControl);
-  } else {
-    FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
-  }
-
-  if (RearLeftMotor3speed == 0) {
-    RearLeftMotor.stop(&motorControl);
-  } else {
-    RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
-  }
-
-  if (RearRightMotor4speed == 0) { 
-    RearRightMotor.stop(&motorControl);
-  } else {
-    RearRightMotor.go(&motorControl, RearRightMotor4speed);
-  }
+    if (RearRightMotor4speed == 0) { 
+      RearRightMotor.stop(&motorControl);
+    } else {
+      RearRightMotor.go(&motorControl, RearRightMotor4speed);
+    }
 }
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
