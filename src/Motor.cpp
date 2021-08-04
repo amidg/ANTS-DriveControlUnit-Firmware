@@ -7,6 +7,8 @@
 #include "analogWrite.h"
 #include "Adafruit_MCP23017.h"
 
+#define POWERLIMITER 5
+
 Motor::Motor(int control1, int control2, int pwmPin) {
   //1ch motor constructor
   IN1 = control1;
@@ -38,7 +40,7 @@ void Motor::begin(Adafruit_MCP23017 *control) {
 
 void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
   int power = abs(directionAndPower);
-  if (directionAndPower >= -5 && directionAndPower <= 5) { power = 0; };
+  if (power < POWERLIMITER) { power = 0; };
   
   //controls side
   if(directionAndPower > 0) {
