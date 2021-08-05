@@ -112,7 +112,7 @@ void loop()
   if (!IGNOREDEBUG) {
     while(true) {
       //check the ROS condition first. If not connected and timeSinceStart is huge -> restart
-      if ( (millis() - timeSinceStart >= 120000) || (!DCU1.connected()) ) {
+      if ( (millis() - timeSinceStart >= 120000) || (!DCU1.connected() && millis() - timeSinceStart >= 60000) ) {
         //reset the hardware
         ESP.restart();
         timeSinceStart = millis();
