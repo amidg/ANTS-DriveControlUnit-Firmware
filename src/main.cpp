@@ -27,7 +27,7 @@ Adafruit_MCP23017 encoderControl;
 
 //Motor constructor for the polulu -> direct control VS MCP23017 should be changed thru hardware description
 Motor FrontRightMotor = Motor(MOTOR1IN1, MOTOR1PWM); //FR, motor 1 -> polulu
-Motor FrontLeftMotor = Motor(MOTOR2IN1, MOTOR2PWM); //FL, motor2 -> polulu
+Motor FrontLeftMotor = Motor(MOTOR2IN2, MOTOR2PWM); //FL, motor2 -> polulu
 Motor RearLeftMotor = Motor(MOTOR3IN1, MOTOR3PWM); //RL, motor3 -> polulu
 Motor RearRightMotor = Motor(MOTOR4IN1, MOTOR4PWM); //RR, motor4 -> polulu
 
@@ -124,24 +124,24 @@ void loop()
 // ADDITIONAL FUNCTIONS ================================================================================
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
   Motor1DataFromROS = msg1.data;
-  FrontRightMotor1speed = (-1)*255*MAXPOWER*(Motor1DataFromROS); //-1 is required because of FET polarity VS BJS polarity
+  FrontRightMotor1speed = 255*MAXPOWER*(Motor1DataFromROS); //-1 is required because of FET polarity VS BJS polarity
   FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
   Motor2DataFromROS = msg2.data;
-  FrontLeftMotor2speed = (-1)*255*MAXPOWER*(Motor2DataFromROS);
+  FrontLeftMotor2speed = 255*MAXPOWER*(Motor2DataFromROS);
   FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
   Motor3DataFromROS = msg3.data;
-  RearLeftMotor3speed = (-1)*255*MAXPOWER*(Motor3DataFromROS);
+  RearLeftMotor3speed = 255*MAXPOWER*(Motor3DataFromROS);
   RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
   Motor4DataFromROS = msg4.data;
-  RearRightMotor4speed = (-1)*255*MAXPOWER*(Motor4DataFromROS);
+  RearRightMotor4speed = 255*MAXPOWER*(Motor4DataFromROS);
   RearRightMotor.go(&motorControl, RearRightMotor4speed);
 }
 
@@ -180,19 +180,32 @@ void BluetoothROS(void * parameter) {
 }
 
 void testMotorsSeparately() {
-  FrontRightMotor.go(&motorControl, 0.2*255);
+  digitalWrite(GIGAVACENABLE, HIGH);
+  int speed = 0.2*255;
+
+  FrontRightMotor.go(&motorControl, speed);
   delay(2000);
   FrontRightMotor.stop(&motorControl);
+  delay(2000);
 
-  FrontLeftMotor.go(&motorControl, 0.2*255);
+  FrontRightMotor.go(&motorControl, (-1)*speed);
+  delay(2000);
+  FrontRightMotor.stop(&motorControl);
+  delay(2000);
+
+  FrontLeftMotor.go(&motorControl, speed);
+  delay(2000);
+  FrontLeftMotor.stop(&motorControl);
+  delay(2000);
+  FrontLeftMotor.go(&motorControl, (-1)*speed);
   delay(2000);
   FrontLeftMotor.stop(&motorControl);
 
-  RearLeftMotor.go(&motorControl, 0.2*255);
-  delay(2000);
-  RearLeftMotor.stop(&motorControl);
+  // RearLeftMotor.go(&motorControl, 0.2*255);
+  // delay(2000);
+  // RearLeftMotor.stop(&motorControl);
 
-  RearRightMotor.go(&motorControl, 0.2*255);
-  delay(2000);
-  RearRightMotor.stop(&motorControl);
+  // RearRightMotor.go(&motorControl, 0.2*255);
+  // delay(2000);
+  // RearRightMotor.stop(&motorControl);
 }

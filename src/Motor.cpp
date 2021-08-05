@@ -51,12 +51,7 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
     //if negative, go backwards
     control->digitalWrite(IN1, LOW);
     // control->digitalWrite(IN2, HIGH); //commented for FET driver
-  } else if (directionAndPower == 0) {
-    control->digitalWrite(IN1, LOW);
-    // control->digitalWrite(IN2, LOW); //commented for FET driver
-    currentPWM = 0;
-    analogWrite(PWM1, currentPWM);
-  }
+  } 
 
   if (currentPWM <= power) {
     for (int i = currentPWM; i < power; i++) {
@@ -73,12 +68,9 @@ void Motor::go(Adafruit_MCP23017 *control, int directionAndPower) {
 }
 
 void Motor::stop(Adafruit_MCP23017 *control) {
+  currentPWM = 0;
+
   for (int i = currentPWM; i >= 0; i--) { //soft slowdown to avoid BJT damage
     analogWrite(PWM1, i);
   }
-
-  control->digitalWrite(IN1, LOW); //fully turn off motors
-  control->digitalWrite(IN2, LOW);
-
-  currentPWM = 0;
 }

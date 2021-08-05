@@ -46,7 +46,7 @@
 #define MOTOR1IN2 1
 
 #define MOTOR2PWM 27
-#define MOTOR2IN1 2
+#define MOTOR2IN1 2 //broken on DCU #1
 #define MOTOR2IN2 3
 
 #define MOTOR3PWM 32
