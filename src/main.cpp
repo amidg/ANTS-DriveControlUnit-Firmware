@@ -125,24 +125,40 @@ void loop()
 void FrontRightROS(const std_msgs::Float32& msg1) { //motor 1 data from ROS to motor control
   Motor1DataFromROS = msg1.data;
   FrontRightMotor1speed = 255*MAXPOWER*(Motor1DataFromROS); //-1 is required because of FET polarity VS BJS polarity
-  FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+  if (FrontRightMotor1speed != 0) {
+    FrontRightMotor.go(&motorControl, FrontRightMotor1speed);
+  } else {
+    FrontRightMotor.stop(&motorControl);
+  }  
 }
 
 void FrontLeftROS(const std_msgs::Float32& msg2) { //motor 2 data from ROS to motor control
   Motor2DataFromROS = msg2.data;
   FrontLeftMotor2speed = 255*MAXPOWER*(Motor2DataFromROS);
-  FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+  if (FrontLeftMotor2speed != 0) {
+    FrontLeftMotor.go(&motorControl, FrontLeftMotor2speed);
+  } else {
+    FrontLeftMotor.stop(&motorControl);
+  }  
 }
 void RearLeftROS(const std_msgs::Float32& msg3) { //motor 3 data from ROS to motor control
   Motor3DataFromROS = msg3.data;
   RearLeftMotor3speed = 255*MAXPOWER*(Motor3DataFromROS);
-  RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+  if (RearLeftMotor3speed != 0) {
+    RearLeftMotor.go(&motorControl, RearLeftMotor3speed);
+  } else {
+    RearLeftMotor.stop(&motorControl);
+  }  
 } 
 
 void RearRightROS(const std_msgs::Float32& msg4) { //motor 4 data from ROS to motor control
   Motor4DataFromROS = msg4.data;
   RearRightMotor4speed = 255*MAXPOWER*(Motor4DataFromROS);
-  RearRightMotor.go(&motorControl, RearRightMotor4speed);
+  if (RearRightMotor4speed != 0) {
+    RearRightMotor.go(&motorControl, RearRightMotor4speed);
+  } else {
+    RearRightMotor.stop(&motorControl);
+  }  
 }
 
 void unlockPowerToMotors(const std_msgs::Int16& msg5) {
