@@ -193,13 +193,14 @@ void BluetoothROS(void * parameter) {
       SerialBT.print("Motor 2 speed ROS/PWM: "); SerialBT.print(Motor2DataFromROS); SerialBT.print("/"); SerialBT.println(FrontLeftMotor2speed);
       SerialBT.print("Motor 3 speed ROS/PWM: "); SerialBT.print(Motor3DataFromROS); SerialBT.print("/"); SerialBT.println(RearLeftMotor3speed);
       SerialBT.print("Motor 4 speed ROS/PWM: "); SerialBT.print(Motor4DataFromROS); SerialBT.print("/"); SerialBT.println(RearRightMotor4speed);
-      // SerialBT.println("------------------------------------");
+      SerialBT.printf("\r\n RAM left %d (bytes)", (ESP.getFreeHeap()));
+      SerialBT.println("------------------------------------");
       SerialBT.flush();
       vTaskDelay(10);
     }
 
     //place encoder stuff here
-    
+  
     
   }
 }
