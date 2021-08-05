@@ -37,7 +37,7 @@ float Motor3DataFromROS;
 float Motor4DataFromROS;
 int16_t contactorEnabled;
 
-long TimeSinceStart;
+unsigned long timeSinceStart = 0;
 
 void testMotorsSeparately();
 
@@ -52,7 +52,9 @@ TwoWire encoderInterface = TwoWire(1);
 
 //MAIN FUNCTION ===============================================================================]
 void setup()
-{
+{ 
+    timeSinceStart = millis();
+
     if (USEBLUETOOTH) { 
       SerialBT.begin("ANTS_DCU"); 
 
@@ -109,6 +111,12 @@ void loop()
 {
   if (!IGNOREDEBUG) {
     while(true) {
+      //check the ROS condition first. If not connected and timeSinceStart is huge -> restart
+      if ( (millis() - timeSinceStart >= 60000) && (!DCU1.connected()) ) {
+        //reset the hardware
+        ESP.restart();
+      }
+
       DCU1.spinOnce();
       delayMicroseconds(20);
     }
